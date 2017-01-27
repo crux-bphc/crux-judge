@@ -2,6 +2,10 @@
 
 **INCOMPLETE** and not at all ready to use. Need volunteers ASAP.
 
+## Index
+
+* [Installation Instructions](docs/install.md)
+
 ## Techs To Be Used
 
 1. python
