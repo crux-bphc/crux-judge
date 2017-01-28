@@ -9,8 +9,8 @@ if [ ! -d "$BASEDIR/env" ]; then
     echo "Virtualenv created."
 fi
 
-if [ ! -f "$BASEDIR/env/updated" -o $BASEDIR/requirements.pip -nt $BASEDIR/env/updated ]; then
-    pip3 install -r $BASEDIR/requirements.pip -E $BASEDIR/env
+if [ ! -f "$BASEDIR/env/updated" -o $BASEDIR/requirements.txt -nt $BASEDIR/env/updated ]; then
+    pip3 install -r $BASEDIR/requirements.txt -t $BASEDIR/env
     touch $BASEDIR/env/updated
     echo "Requirements installed."
 fi
