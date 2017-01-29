@@ -9,8 +9,8 @@ def execute_local(file_path):
     file_dir = os.path.dirname(file_path)
     # lets subprocess run current directory files
     if file_dir == "":
-        file_dir = "./"
-    #print ("file_dir: ",file_dir)
+        file_dir = os.path.dirname(__file__)
+    print ("file_dir: ",file_dir)
     try:
         # runs the terminal command - compile (gcc name.c -o name)
         process_compile = subprocess.run(["gcc",file_path,"-o", file_path_without_extension],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -19,9 +19,10 @@ def execute_local(file_path):
         print ("\nprocess_compile stderr:\n",process_compile.stderr)
 
     #if compilation is not clear, then handle it
-    except subprocess.CalledProcessError:
-        print ("\n1 baar compile kar dete upload kerne se pehle...\n")
-        #print ("step1.py@process_compile: some weird unplanned thing")
+    except subprocess.CalledProcessError as e:
+        print ("\nCompilation Error\n")
+        # print(e)
+        exit(1)
 
 
     #if compilation is clear, try to run the file
@@ -35,11 +36,13 @@ def execute_local(file_path):
 
         #if program execute is unclear, handle it here
         except subprocess.CalledProcessError:
-            print ("compile to hoh gaya, par ko do gadbad hai, daya")
+            print ("Execution Error")
+            exit(1)
 
         #if program execution is successful, handle it here
         else:
-            print ("executed successfullly: tera pappu paas ho gaya")
+            print ("Execution Successful")
+            exit(0)
 
     return
 
