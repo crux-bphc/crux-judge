@@ -16,13 +16,13 @@ Now, run the following commands to install the virtual environment.
 ```bash
 git clone https://github.com/CRUx-BPHC/crux-judge.git
 cd crux-judge
-tools/setup.sh
+tools/setup
 ```
 
 Now, you should have virtual-env installed, as well as dependencies installed/updated using pip3. You need to activate the virtual environment just installed to start developing.
 
 ```bash
-source env/bin/activate
+source tools/activate
 ```
 
 To test if the Virtual Environment has been setup, run `which python3`. If it shows the path to your Project Directory, then you are now ready to develop.

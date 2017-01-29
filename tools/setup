@@ -10,7 +10,7 @@ if [ ! -d "$BASEDIR/env" ]; then
 fi
 
 if [ ! -f "$BASEDIR/env/updated" -o $BASEDIR/requirements.txt -nt $BASEDIR/env/updated ]; then
-    pip3 install -r $BASEDIR/requirements.txt -t $BASEDIR/env
+    pip3 install -r $BASEDIR/requirements.txt -t $BASEDIR/env/dep
     touch $BASEDIR/env/updated
     echo "Requirements installed."
 fi
