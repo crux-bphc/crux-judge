@@ -12,6 +12,9 @@ source env/bin/activate
 python3 judge/manage.py runserver
 ```
 
+Check if the localserver is working, by opening your browser and typing `127.0.0.1:8000`
+If you see the Django Congratulations message, you have successfully run the server!
+
 # Testing Instructions
 
 ## Developers
@@ -25,3 +28,5 @@ To test the working of the file,
 + open test1.py with `gedit judge/trial/step1.py` to see the handler function
 + to test the [file](judge/trial/step1.py), run the following command:
 `python3 judge/trial/step1.py`
+
+
