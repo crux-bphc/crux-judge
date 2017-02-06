@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    <h2>Hello-World, trials index page</h2>
+    <br /><br />
+    <form action="/trial/upload/" method="POST">
+      {% csrf_token %}
+      {{ submission_form }}
+      <input type="submit" value="Upload" />
+    </form>
+  </body>
+</html>
