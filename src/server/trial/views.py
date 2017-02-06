@@ -17,6 +17,9 @@ def index(request):
 def upload(request):
     if request.method == "POST":
         uploaded_filedata = request.FILES["submission_file"]
+        #creates src/server/submissions folder if does not exist
+        if not os.path.isdir("submissions"):
+            os.makedirs("submissions")
         # creates new file in src/server/submissions
         filepath = "submissions/"+request.FILES["submission_file"].name
         submission_file = open(filepath,"wb+")
