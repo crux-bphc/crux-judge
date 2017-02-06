@@ -5,7 +5,7 @@
   <body>
     <h2>Hello-World, trials index page</h2>
     <br /><br />
-    <form action="/trial/upload/" method="POST">
+    <form action="/trial/upload/" method="POST" enctype="multipart/form-data">
       {% csrf_token %}
       {{ submission_form }}
       <input type="submit" value="Upload" />
