@@ -1,8 +1,10 @@
 import os
 import subprocess
 
-# runs files on local computer. file_path is the name of the file with absolute path
+
 def execute_local(file_path):
+    """ runs files on local computer. file_path is the name of the file with absolute path"""
+
     #file_path cotains the name of the file with path and extension
     file_path_without_extension = os.path.splitext(file_path)[0]
     # contains directory part of file_path
@@ -29,14 +31,14 @@ def execute_local(file_path):
     #if compilation is not clear, then handle it
     except subprocess.CalledProcessError as e:
         print ("\nCompilation Error\n")
-        # print(e)
+        print(e)
         exit(1)
 
     #if compilation is clear, try to run the file
     else:
         #check if an input file exists. take input from it if exists
         try:
-            input_file=open('input')
+            input_file=open(file_dir+'/input')
         except FileNotFoundError:
             input_file=subprocess.PIPE
 
