@@ -1,4 +1,4 @@
-# Running Instructions
+cd# Running Instructions
 
 ## Developers
 
@@ -31,8 +31,11 @@ Note that [step1.py](judge/trial/step1.py) is a stand-alone file, unrelated to d
 It just contains the handler function, nothing more (move it according to project structure, if need be)
 
 To test the working of the file,
-+ create a [hello_world.c](judge/trial/step1.py) test file with `gedit judge/trial/hello_world.c` 
++ create a [hello_world.c](judge/trial/step1.py) test file with `gedit judge/trial/hello_world.c`
 + open test1.py with `gedit judge/trial/step1.py` to see the handler function
 + to test the [file](judge/trial/step1.py), run the following command:
 `python3 judge/trial/step1.py`
++ the file takes input(if required) from a file 'input' located in the same directory as the C file
 
+* [add_student_records.py](srv/server/add_student_records.py) takes csv records of the form "username,email,name,password"
+    from file [student_records.csv](src/server/student_records.csv) and adds to the database

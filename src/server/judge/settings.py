@@ -25,7 +25,7 @@ SECRET_KEY = '28_3-ql7tposo-s+qvkhb3hs58uoo5hqb!x@m+28wgv%she5v5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -77,8 +77,11 @@ WSGI_APPLICATION = 'judge.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'cruxjudgedb',
+        'USER': 'cruxjudge',
+        'PASSWORD': 'pass@cruxjudge',
+        'HOST': 'localhost'
     }
 }
 
@@ -88,7 +91,7 @@ DATABASES = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Calcutta'
 
 USE_I18N = True
 

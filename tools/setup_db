@@ -1,0 +1,8 @@
+#Create a new User "cruxjudge" with password "pass@cruxjudge" and new database "cruxjudgedb"
+
+read -s -p "Enter MySQL root password : " PASSWORD
+
+mysql -u root -p${PASSWORD} -e "CREATE USER cruxjudge@localhost identified by 'pass@cruxjudge';"
+mysql -u root -p${PASSWORD} -e "CREATE DATABASE cruxjudgedb;"
+mysql -u root -p${PASSWORD} -e "GRANT ALL PRIVILEGES ON cruxjudgedb.* TO cruxjudge@localhost;"
+mysql -u root -p${PASSWORD} -e "FLUSH PRIVILEGES;"
