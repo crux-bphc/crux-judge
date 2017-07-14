@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <title>
+            LOGIN
+        </title>
+    </head>
+    <body>
+        <h2>CONTEST LOGIN</h2>
+        <br><br>
+        <form action="/contest/login/" method="POST" enctype="multipart/form-data">
+
+            {% csrf_token %}
+            {{ login_form }}
+
+            <br><br><input type="submit" value="Login">
+
+        </forms>
+    </body>
+</html>
