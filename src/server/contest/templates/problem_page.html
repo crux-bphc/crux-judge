@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <title>
+            Problems
+        </title>
+    </head>
+
+    <body>
+
+        <h3>PROBLEMS</h3>
+        <br><br>
+        <ol type='1'>
+            {%for id,title in data%}
+            <li><a href="/contest/problem/{{id}}/">{{title}}</a></li>
+            {%endfor%}
+        </ol>
+
+    </body>
+
+</html>
