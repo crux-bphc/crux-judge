@@ -1,17 +1,32 @@
 <html>
     <head>
+        <title>
+                {{problem.title}}
+        </title>
     </head>
 
-
     <body>
-        <title>
-            <h3>
-                problem
-            </h3>
-        </title>
+        {% csrf_token %}
+        <div align="right">
+            Yo {{ username }}
+        </div>
 
+        <div align="right">
+            <a href = "/contest/logout/"> Logout </a>
+        </div>
+
+        <div>
         title : {{problem.title}}<br>
-        statement : {{problem.statement}}
+        statement : {{problem.statement}}<br><br>
+        </div>
+
+        <div>
+        <form action = "/contest/upload/" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ submission_form }}
+            <input type="submit" value="Upload">
+        </form>
+    </div>
 
     </body>
 
