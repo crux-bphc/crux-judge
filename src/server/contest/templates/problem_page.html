@@ -6,9 +6,18 @@
     </head>
 
     <body>
+        {% csrf_token %}
+        <div align="right">
+            Yo {{ username }}
+        </div>
+
+        <div align="right">
+            <a href = "/contest/logout/"> Logout </a>
+        </div>
 
         <h3>PROBLEMS</h3>
         <br><br>
+
         <ol type='1'>
             {%for id,title in data%}
             <li><a href="/contest/problem/{{id}}/">{{title}}</a></li>
