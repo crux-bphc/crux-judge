@@ -7,7 +7,7 @@
     <body>
         <h2>CONTEST LOGIN</h2>
         <br><br>
-        <form action="/contest/login/" method="POST" enctype="multipart/form-data">
+        <form action="/contest/auth/" method="POST" enctype="multipart/form-data">
 
             {% csrf_token %}
             {{ login_form }}
