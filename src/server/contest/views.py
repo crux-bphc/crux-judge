@@ -8,6 +8,7 @@ from trial.models import Problem as all_problems
 from time import sleep
 import os
 from datetime import datetime
+from . import runner
 
 # Create your views here.
 def index(request):
@@ -23,7 +24,6 @@ def index(request):
     }
 
     return render(request,'contest_login.html',context)
-
 
 def auth(request):
     if request.method == "POST":
@@ -85,21 +85,33 @@ def problemList(request):
 
 
 def upload(request):
-
+    print()
     if request.method == "POST":
+
+        problem_id = request.POST.get('problem_id')
+        problem = all_problems.objects.get(problem_id=problem_id)
+        user = User.objects.get(id=request.session['_auth_user_id'])
+        submission_file_name = user.username + '_' + str(problem.problem_id) + '.c'
+
         uploaded_filedata = request.FILES["submission_file"]
         #creates /contest/submissions folder if does not exist
-        if not os.path.isdir("submissions"):
-            os.makedirs("submissions")
+        if not os.path.isdir("contest/submissions"):
+            os.makedirs("contest/submissions")
+
         # creates new file in /contest/submissions
-        filepath = "submissions/"+request.FILES["submission_file"].name
+        filepath = "contest/submissions/"+submission_file_name
         submission_file = open(filepath,"wb+")
+
         # write to file - failsafe for handling large file
         for chunk in uploaded_filedata.chunks():
             submission_file.write(chunk)
-        # insert submission file handler below
-        # compile("submissions/")
+        submission_file.close()
+
+        evaluate = runner.runner(problem,user)
+        evaluate.check_all()
+
         return HttpResponse("File uploaded successfully")
+
     else:
         return HttpResponse("/contest/upload/")
 

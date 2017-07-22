@@ -6,13 +6,13 @@
     </head>
 
     <body>
-        {% csrf_token %}
+
         <div align="right">
             Yo {{ username }}
         </div>
 
         <div align="right">
-            <a href = "/contest/logout/"> Logout </a>
+            <a href = "/contest/logout/" role="button"> Logout </a>
         </div>
 
         <div>
@@ -21,12 +21,13 @@
         </div>
 
         <div>
-        <form action = "/contest/upload/" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ submission_form }}
-            <input type="submit" value="Upload">
-        </form>
-    </div>
+            <form id="submission_file" action = "/contest/upload/" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ submission_form }}
+                <input type="hidden" name="problem_id" value={{problem.problem_id}}>
+                <input type="submit" value="Upload and Run">
+            </form>
+        </div>
 
     </body>
 
