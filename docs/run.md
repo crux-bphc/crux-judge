@@ -39,3 +39,21 @@ To test the working of the file,
 
 * [add_student_records.py](srv/server/add_student_records.py) takes csv records of the form "username,email,name,password"
     from file [student_records.csv](src/server/student_records.csv) and adds to the database
+
+## Contest Testing
+
+* Follow tools/install
+* Run /src/server/django_setup to create a django migrations and superuser
+* Run the following command in /src/server/ to start the server:
+`python3 manage.py runserver`
+* The server will run on `127.0.0.1:8000` by default. Visit `127.0.0.1:8000/admin/` to manage databases.
+* Add Problems in "Problems". Add users.
+* Add problems to "Contest Problems" to add problems to the contest.
+* Add testcases to the folder /src/server/contest/testcases/ in the following format.
+    /testcases/ directory should contain folders whose name are the problem_id of the problem.
+    The problem folder must contain equal number of input and output files. Files must be of the format inputX and outputX, where X belongs to integers
+    For example :
+        /testcases/2/ must contain testcases data for problem with problem_id = 2
+        Suppose there are two testcases for the problem, create 4 files named : input1,input2,output1,outpu2
+        outputX corresponds to the output for the case when input is inputX. Add as many cases as desired.
+* Visit `127.0.0.1:8000/contest/` to access contest        
