@@ -15,7 +15,7 @@ sudo apt install mysql-server mysql-client
 Now, run the following commands to install the virtual environment.
 
 ```bash
-git clone https://github.com/CRUx-BPHC/crux-judge.git
+git clone -b contest https://github.com/basu96/crux-judge.git
 cd crux-judge
 tools/setup
 ```
