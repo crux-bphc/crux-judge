@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from .forms import LoginForm,SubmissionForm
-from .models import Problem as contest_problem
+from .models import Problem as contest_problem,Submission
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from trial.models import Problem as all_problems
@@ -9,11 +9,13 @@ from time import sleep
 import os
 from datetime import datetime
 from . import runner
+from ipware.ip import get_ip
+from django.utils import timezone
 
 # Create your views here.
 def index(request):
     # request.session.clear_expired()
-
+    print(timezone.localtime())
     if request.user.is_authenticated():
         return problemList(request)
 
@@ -88,12 +90,13 @@ def upload(request):
     print()
     if request.method == "POST":
 
+        ip_address = get_ip(request)
         problem_id = request.POST.get('problem_id')
-        problem = all_problems.objects.get(problem_id=problem_id)
+        problem = contest_problem.objects.get(problem_id=problem_id)
         user = User.objects.get(id=request.session['_auth_user_id'])
         submission_file_name = user.username + '_' + str(problem.problem_id) + '.c'
 
-        uploaded_filedata = request.FILES["submission_file"]
+        uploaded_filedata = request.FILES['submission_file']
         #creates /contest/submissions folder if does not exist
         if not os.path.isdir("contest/submissions"):
             os.makedirs("contest/submissions")
@@ -107,8 +110,16 @@ def upload(request):
             submission_file.write(chunk)
         submission_file.close()
 
-        evaluate = runner.runner(problem,user)
+        submission = Submission.objects.create(
+                        problem=problem.problem,
+                        user=user,
+                        ip=ip_address,
+                        local_file=submission_file_name
+                        )
+
+        evaluate = runner.Runner(submission)
         evaluate.check_all()
+        evaluate.score_obtained()
 
         return HttpResponse("File uploaded successfully")
 
@@ -118,3 +129,12 @@ def upload(request):
 def logout_view(request):
     logout(request)
     return HttpResponse("You're logged out.")
+
+def display_submissions(request):
+    user = User.objects.get(id=request.session['_auth_user_id'])
+    all_submissions = Submission.objects.all()
+    context = {
+            "submissions" : all_submissions,
+            "username" : user.username
+    }
+    return render(request,"display_submissions.html",context)

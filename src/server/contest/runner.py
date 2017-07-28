@@ -1,23 +1,26 @@
 import os
 import fnmatch
 import subprocess
-from django.contrib.auth.models import User
-from trial.models import Problem as all_problems
+from .models import Problem as contest_problem
+# from django.contrib.auth.models import User
+# from trial.models import Problem as all_problems
 
-class runner():
+class Runner():
     """To compile, execute and evaluate the
     submitted code against saved testcases """
 
     BASE_TEST_CASES_DIR = os.getcwd() + '/contest/testcases'
     BASE_SUBMISSION_DIR = os.getcwd() + '/contest/submissions'
 
-    def __init__(self,problem,user):
+    def __init__(self,submission):
         # Takes problem and user object as arguments
-        self.problem_id = problem.problem_id
-        self.user = user.username
+        self.submission = submission
+        self.problem_id = self.submission.problem.problem_id
+        self.user = self.submission.user.username
         self.testcase_dir = self.BASE_TEST_CASES_DIR + "/" + str(self.problem_id)
         self.inputs(self.testcase_dir)
         self.submission_file = self.BASE_SUBMISSION_DIR + '/' + self.user + '_' + str(self.problem_id) + '.c'
+        self.MAX_SCORE = contest_problem.objects.get(problem_id=self.problem_id).max_score
 
     def inputs(self,testcase_dir):
         # Prepare input files
@@ -36,7 +39,7 @@ class runner():
 
         # for testing
         print("\n\nTEST CASES RESPONSES : ",end='')
-        print(self.tests,end='\n\n')
+        print(self.tests)
 
     def check_result(self,input_file):
         result = self.execute(self.submission_file,input_file)
@@ -119,3 +122,13 @@ class runner():
 
             else:
                 print ("Execution Successful")
+
+    def score_obtained(self):
+        responses = self.tests
+        correct_answer = responses.count(1)
+        score = correct_answer/len(responses) * self.MAX_SCORE
+        self.submission.score = score
+        self.submission.save()
+        print("SCORE : ",end='')
+        print(score,end="\n\n")
+        return score
