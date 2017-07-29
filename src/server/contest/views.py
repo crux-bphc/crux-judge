@@ -132,9 +132,13 @@ def logout_view(request):
 
 def display_submissions(request):
     user = User.objects.get(id=request.session['_auth_user_id'])
-    all_submissions = Submission.objects.all()
+    print(request.GET.keys())
+    if request.GET.keys():
+        query = Submission.objects.filter(problem_id=request.GET['p'])
+    else:
+        query = Submission.objects.all()
     context = {
-            "submissions" : all_submissions,
+            "submissions" : query,
             "username" : user.username
     }
     return render(request,"display_submissions.html",context)
