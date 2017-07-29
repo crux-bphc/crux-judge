@@ -7,5 +7,6 @@ urlpatterns = [
     url(r'^problem/(?P<problem_id>[0-9]+)/$', views.problem, name='problem'),
     url(r'^upload/', views.upload, name='upload'),
     url(r'^logout',views.logout_view, name='logout'),
-    url(r'^submissions',views.display_submissions, name='submissions')
+    url(r'^submissions',views.display_submissions, name='submissions'),
+    url(r'^submissions/(?P<p>[0-9]+)/$',views.display_submissions, name='problem_submissions')
 ]
