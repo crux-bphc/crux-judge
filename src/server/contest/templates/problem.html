@@ -12,9 +12,9 @@
         </div>
 
         <div align="right">
-            <a href = "/contest/logout/" role="button"> Logout </a><br>
+            <a href = "/contest/logout/" role="button" onclick="alert('LOGGED OUT');"> Logout </a><br>
             <a href = "/contest/submissions/">All Submissions </a><br>
-            <a href = "/contest/submissions/?p={{problem.problem_id}}"> Problem Submissions </a> 
+            <a href = "/contest/submissions/?p={{problem.problem_id}}"> Problem Submissions </a>
         </div>
 
         <div>
@@ -27,7 +27,7 @@
                 {% csrf_token %}
                 {{ submission_form }}
                 <input type="hidden" name="problem_id" value={{problem.problem_id}}>
-                <input type="submit" value="Upload and Run">
+                <input type="submit" value="Upload and Run" onclick="alert('FILE UPLOADED SUCCESSFULLY');">
             </form>
         </div>
 

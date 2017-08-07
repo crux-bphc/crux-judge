@@ -1,9 +1,8 @@
 import os
 import fnmatch
 import subprocess
+from .sandbox_config import *
 from .models import Problem as contest_problem
-# from django.contrib.auth.models import User
-# from trial.models import Problem as all_problems
 
 class Runner():
     """To compile, execute and evaluate the
@@ -44,7 +43,7 @@ class Runner():
     def check_result(self,input_file):
         result = self.execute(self.submission_file,input_file)
         try:
-            output = result['output'].decode()
+            output = result['output']
             output_file_path = self.testcase_dir + '/' + 'output' + input_file.split('input')[1]
             output_file = open(output_file_path,'r')
             expected_output = output_file.read()
@@ -64,8 +63,6 @@ class Runner():
     def execute(self,file_path,input_file_path):
         # runs files on local computer. file_path is the name of the file with absolute path
 
-        result={}
-
         #file_path cotains the name of the file with path and extension
         file_path_without_extension = os.path.splitext(file_path)[0]
         # contains directory part of file_path
@@ -74,6 +71,8 @@ class Runner():
         file_name = os.path.basename(file_path)
         # name of the file without extension
         file_name_without_extension = file_name.split('.')[0]
+        #executable is stored in /sandbox/jail/executable
+        executable_path = os.getcwd() + "/contest/sandbox/jail/executable"
 
         #printing for testing purposes
         # print ("file_path: "+file_path)
@@ -81,10 +80,11 @@ class Runner():
         # print ("file dir : "+file_dir)
         # print ("file name : "+file_name)
         # print ("file name without extension : "+file_name_without_extension)
+        # print("executable file directory:" + executable_path)
 
         try:
             # runs the terminal command - compile (gcc path/name.c -o path/name)
-            process_compile = subprocess.run(["gcc",file_path,"-o", file_path_without_extension],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            process_compile = subprocess.run(["gcc",file_path,"-o", executable_path,"--static"],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             # debug statements: 'process_compile' var holds returned process data
             # print ("\nprocess_compile stdout:",process_compile.stdout)
             # print ("process_compile stderr:",process_compile.stderr)
@@ -105,23 +105,8 @@ class Runner():
             except FileNotFoundError:
                 input_file=subprocess.PIPE
 
-            try:
-                # runs terminal command - execute (./name)
-                process_exec = subprocess.run([file_path_without_extension],check=True,timeout=10,stdin=input_file,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                # debug statements: 'process_exec' var holds returned process data
-                # print ("\n\nprocess_exec stdout:",process_exec.stdout)
-                # print ("process_exec stderr:",process_exec.stderr)
-                result['output']=process_exec.stdout
-                return result
-
-            #if program execute is unclear, handle it here
-            except subprocess.CalledProcessError:
-                print ("Execution Error")
-                result['error']='Execution Error'
-                return result
-
-            else:
-                print ("Execution Successful")
+            result = self.safe_execution(input_file_path)
+            return result
 
     def score_obtained(self):
         responses = self.tests
@@ -132,3 +117,24 @@ class Runner():
         print("SCORE : ",end='')
         print(score,end="\n\n")
         return score
+
+    def safe_execution(self,input_file_path):
+
+        INPUT_FILE = input_file_path
+        result = {}
+
+        cmd = ["sudo",EXE,MEMORY_LIMIT,TIME_LIMIT,MAX_PIDS,MEMORY_CGROUP,CPUACCT_CGROUP,PIDS_CGROUP,JAIL_DIR,EXECUTABLE_FILE,INPUT_FILE,OUTPUT_FILE,WHITELIST,UID,GID]
+        # process = subprocess.run(cmd,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        try:
+            subprocess.check_call(cmd,stdout=subprocess.PIPE)
+            output_file = os.getcwd() + '/contest/sandbox/output'
+            output = open(output_file,'r')
+            result['output'] = output.read()
+        except subprocess.CalledProcessError as e:
+            returncode = e.returncode
+            if returncode == 4:
+                result['error'] = "Time limit Exceeded"
+            elif returncode == 3:
+                result['error'] = "Memory Limit Exceeded"
+
+        return result
