@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from .forms import LoginForm,SubmissionForm
-from .models import Problem as contest_problem
+from .models import Problem as contest_problem,Submission
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from trial.models import Problem as all_problems
@@ -9,10 +9,14 @@ from time import sleep
 import os
 from datetime import datetime
 from . import runner
+from ipware.ip import get_ip
+from django.utils import timezone
+from django.contrib import messages
 
 # Create your views here.
 def index(request):
     # request.session.clear_expired()
+    print(timezone.localtime())
 
     if request.user.is_authenticated():
         return problemList(request)
@@ -85,15 +89,17 @@ def problemList(request):
 
 
 def upload(request):
-    print()
+
+
     if request.method == "POST":
 
+        ip_address = get_ip(request)
         problem_id = request.POST.get('problem_id')
-        problem = all_problems.objects.get(problem_id=problem_id)
+        problem = contest_problem.objects.get(problem_id=problem_id)
         user = User.objects.get(id=request.session['_auth_user_id'])
         submission_file_name = user.username + '_' + str(problem.problem_id) + '.c'
 
-        uploaded_filedata = request.FILES["submission_file"]
+        uploaded_filedata = request.FILES['submission_file']
         #creates /contest/submissions folder if does not exist
         if not os.path.isdir("contest/submissions"):
             os.makedirs("contest/submissions")
@@ -107,14 +113,39 @@ def upload(request):
             submission_file.write(chunk)
         submission_file.close()
 
-        evaluate = runner.runner(problem,user)
-        evaluate.check_all()
 
-        return HttpResponse("File uploaded successfully")
+        submission = Submission.objects.create(
+                        problem=problem.problem,
+                        user=user,
+                        ip=ip_address,
+                        local_file=submission_file_name
+                        )
+
+        evaluate = runner.Runner(submission)
+        evaluate.check_all()
+        evaluate.score_obtained()
+
+        return HttpResponse(status=204)
+
 
     else:
         return HttpResponse("/contest/upload/")
 
 def logout_view(request):
     logout(request)
-    return HttpResponse("You're logged out.")
+    messages.info(request,"You have been logged out")
+    return index(request)
+
+def display_submissions(request):
+    user = User.objects.get(id=request.session['_auth_user_id'])
+
+    if request.GET.keys():
+        query = Submission.objects.filter(problem_id=request.GET['p'])
+    else:
+        query = Submission.objects.all()
+    context = {
+            "submissions" : query,
+            "username" : user.username
+    }
+    return render(request,"display_submissions.html",context)
+

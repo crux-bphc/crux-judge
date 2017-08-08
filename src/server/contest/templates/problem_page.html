@@ -1,29 +1,35 @@
-<html>
-    <head>
-        <title>
-            Problems
-        </title>
-    </head>
+{% extends "header.html" %}
 
-    <body>
-        {% csrf_token %}
-        <div align="right">
-            Yo {{ username }}
-        </div>
+{% block title %} Problem Page {% endblock %}
 
+{% block body %}
+    {% csrf_token %}
+    
+    <div class="alert alert-success">
+        Welcome <strong> {{ username }} </strong>
+    </div>
+
+    <div class="container">
+        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/submissions/">View All Submissions</a>
         <div align="right">
-            <a href = "/contest/logout/"> Logout </a>
+            <a href = "/contest/logout/" onclick="alert('LOGGED OUT');"> Logout </a><br>
+            <a href = "/contest/submissions/"> All Submissions </a>
+
         </div>
 
         <h3>PROBLEMS</h3>
         <br><br>
 
-        <ol type='1'>
-            {%for id,title in data%}
-            <li><a href="/contest/problem/{{id}}/">{{title}}</a></li>
-            {%endfor%}
-        </ol>
 
-    </body>
+        {% for id, title in data %}
+            <div class="row problem" style="background-color: white;">
+                <h3 style="margin-left: 10px;">{{ id }}. <a style="text-decoration: None" href="/contest/problem/{{id}}/">{{ title }}</a></h3>
+                <p style="margin-left: 10px;"><strong>Problem Setter: </strong>Anonymous<br/><strong>Submissions: </strong>#</p>            
+            </div>
+            <br/>
+        {% endfor %}
 
-</html>
+    </div>
+{% endblock %}
+
+
