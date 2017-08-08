@@ -1,0 +1,67 @@
+{% load static %}
+
+<html>
+    <head>
+    	<title>{% block title %}{% endblock %}</title>
+    	<meta charset="utf-8">
+        <meta content="width=device-width,initial-scale=1" name=viewport>
+
+        <link href="{% static "/css/bootstrap.min.css" %}" rel="stylesheet">
+
+        <link href="{% static "/css/style.css" %}" rel="stylesheet">
+
+        <link rel="shortcut icon" href="{% static "/images/crux.ico" %}">
+        <link rel="icon" href="{% static "/images/crux.ico" %}" type = "image/x-icon">
+
+        <link href="https://fonts.googleapis.com/css?family=Abel|Josefin+Sans|Dancing+Script|Sofia" rel="stylesheet">
+
+    </head>
+    <header>
+    	<div class="navbarn navbar-inverse navmenu" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <!-- Add CRUx Logo here -->
+                    <a class="navbar-brand" href="#">CRUx Judge</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav" style="float:right;">
+                    	<!--
+                    	Add code to control login and logout buttons - use session.logged_in          
+                        -->
+                        <li><a href="#">About</a></li>
+                        {% if not user.is_authenticated %}
+                            <li><a href="/contest/">Dashboard</a></li>
+                        {% else %}
+                            <li><a href="/contest/">{{ user.get_username }}</a></li>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                            <li><a href="/contest/logout/" onclick="alert(LOGGED OUT);">Logout</a></li>
+                        {% else %}
+                            <li><a href="/contest/">Login</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+	<body style="background-image: url('{% static "images/bg2.jpg"%}')">
+		
+		<!-- Add code for displaying flashed messages -->
+		
+		{% block body %} {% endblock %}
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+        <script type="contest/text/javascript" src="static/js/bootstrap.min.js"></script>
+    </body>
+</html>
+
+<!--
+Todo:
+ * Add routes to the links
+-->

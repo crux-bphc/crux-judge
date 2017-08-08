@@ -91,3 +91,6 @@ ENV/
 
 # Submissions Files
 src/server/submissions
+
+# Executable in sandbox
+src/server/contest/sandbox/jail/executable
