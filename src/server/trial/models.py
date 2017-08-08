@@ -13,6 +13,7 @@ class Problem(models.Model):
     uploadedby = models.ForeignKey(User,verbose_name="problem-setter")
     def __str__(self):
         return "{} : {}".format(self.problem_id,self.title)
+
     class Meta:
         verbose_name='problem'
         ordering = ['problem_id']

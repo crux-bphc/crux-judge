@@ -17,6 +17,7 @@ from django.contrib import messages
 def index(request):
     # request.session.clear_expired()
     print(timezone.localtime())
+
     if request.user.is_authenticated():
         return problemList(request)
 
@@ -89,6 +90,7 @@ def problemList(request):
 
 def upload(request):
 
+
     if request.method == "POST":
 
         ip_address = get_ip(request)
@@ -111,6 +113,7 @@ def upload(request):
             submission_file.write(chunk)
         submission_file.close()
 
+
         submission = Submission.objects.create(
                         problem=problem.problem,
                         user=user,
@@ -123,6 +126,7 @@ def upload(request):
         evaluate.score_obtained()
 
         return HttpResponse(status=204)
+
 
     else:
         return HttpResponse("/contest/upload/")
@@ -144,3 +148,4 @@ def display_submissions(request):
             "username" : user.username
     }
     return render(request,"display_submissions.html",context)
+

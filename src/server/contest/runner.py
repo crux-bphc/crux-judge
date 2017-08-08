@@ -1,6 +1,7 @@
 import os
 import fnmatch
 import subprocess
+
 from .sandbox_config import *
 from .models import Problem as contest_problem
 
@@ -10,6 +11,7 @@ class Runner():
 
     BASE_TEST_CASES_DIR = os.getcwd() + '/contest/testcases'
     BASE_SUBMISSION_DIR = os.getcwd() + '/contest/submissions'
+
 
     def __init__(self,submission):
         # Takes problem and user object as arguments
@@ -38,11 +40,14 @@ class Runner():
 
         # for testing
         print("\n\nTEST CASES RESPONSES : ",end='')
+
         print(self.tests)
+
 
     def check_result(self,input_file):
         result = self.execute(self.submission_file,input_file)
         try:
+
             output = result['output']
             output_file_path = self.testcase_dir + '/' + 'output' + input_file.split('input')[1]
             output_file = open(output_file_path,'r')
@@ -63,6 +68,7 @@ class Runner():
     def execute(self,file_path,input_file_path):
         # runs files on local computer. file_path is the name of the file with absolute path
 
+
         #file_path cotains the name of the file with path and extension
         file_path_without_extension = os.path.splitext(file_path)[0]
         # contains directory part of file_path
@@ -71,8 +77,10 @@ class Runner():
         file_name = os.path.basename(file_path)
         # name of the file without extension
         file_name_without_extension = file_name.split('.')[0]
+
         #executable is stored in /sandbox/jail/executable
         executable_path = os.getcwd() + "/contest/sandbox/jail/executable"
+
 
         #printing for testing purposes
         # print ("file_path: "+file_path)
@@ -80,6 +88,7 @@ class Runner():
         # print ("file dir : "+file_dir)
         # print ("file name : "+file_name)
         # print ("file name without extension : "+file_name_without_extension)
+
         # print("executable file directory:" + executable_path)
 
         try:
@@ -138,3 +147,4 @@ class Runner():
                 result['error'] = "Memory Limit Exceeded"
 
         return result
+

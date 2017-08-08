@@ -3,12 +3,14 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.utils import timezone
+
 # Create your models here.
 
 @python_2_unicode_compatible
 
 class Problem(models.Model):
     problem = models.ForeignKey('trial.problem',verbose_name='problem')
+
     max_score = models.FloatField(default=0)
     class Meta:
         verbose_name = 'Contest Problem'
@@ -26,3 +28,4 @@ class Submission(models.Model):
     local_file = models.CharField(max_length=150,null=True,verbose_name='Original File')
     def __str__(self):
         return "{} - {} - {}".format(self.user.username,self.problem.title,self.time)
+

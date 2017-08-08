@@ -14,10 +14,12 @@
         <div align="right">
             <a href = "/contest/logout/" onclick="alert('LOGGED OUT');"> Logout </a><br>
             <a href = "/contest/submissions/"> All Submissions </a>
+
         </div>
 
         <h3>PROBLEMS</h3>
         <br><br>
+
 
         {% for id, title in data %}
             <div class="row problem" style="background-color: white;">
@@ -29,4 +31,5 @@
 
     </div>
 {% endblock %}
+
 
