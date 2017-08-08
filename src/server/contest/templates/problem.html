@@ -1,37 +1,35 @@
-<html>
-    <head>
-        <title>
-                {{problem.title}}
-        </title>
-    </head>
+{% extends "header.html" %}
 
-    <body>
+{% block title %} Problem {{ problem.problem_id }} {% endblock %}
 
-        <div align="right">
-            Yo {{ username }}
+{% block body %}
+
+    <div class="alert alert-success">
+        Welcome <strong> {{ username }} </strong>
+    </div>
+
+    <div class="container-fluid">
+        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/submissions/?p={{problem.problem_id}}">Problem Submissions</a>
+
+        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/submissions/">All Submissions</a>
+        <br/><br/>
+        <div class="jumbotron">
+            <h2>{{problem.problem_id}}. {{problem.title}}</h2>
+            <hr>
+            <p>
+                <strong>Problem Statement</strong><br/>
+                {{problem.statement}}
+            </p><br/><br/>
+        
+
+            <div>
+                <form id="submission_file" action = "/contest/upload/" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ submission_form }}
+                    <input type="hidden" name="problem_id" value={{problem.problem_id}}><br/>
+                    <input class="btn btn-danger" type="submit" value="Upload and Run">
+                </form>
+            </div>
         </div>
-
-        <div align="right">
-            <a href = "/contest/logout/" role="button" onclick="alert('LOGGED OUT');"> Logout </a><br>
-            <a href = "/contest/submissions/">All Submissions </a><br>
-            <a href = "/contest/submissions/?p={{problem.problem_id}}"> Problem Submissions </a>
-        </div>
-
-        <div>
-        title : {{problem.title}}<br>
-        statement : {{problem.statement}}<br><br>
-        </div>
-
-        <div>
-            <form id="submission_file" action = "/contest/upload/" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ submission_form }}
-                <input type="hidden" name="problem_id" value={{problem.problem_id}}>
-                <input type="submit" value="Upload and Run" onclick="alert('FILE UPLOADED SUCCESSFULLY');">
-            </form>
-        </div>
-
-    </body>
-
-
-</html>
+    </div>
+{% endblock %}
