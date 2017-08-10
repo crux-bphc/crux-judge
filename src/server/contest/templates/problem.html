@@ -4,11 +4,9 @@
 
 {% block body %}
 
-    <div class="alert alert-success">
-        Welcome <strong> {{ username }} </strong>
-    </div>
-
     <div class="container-fluid">
+        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/">All Problems</a>
+
         <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/submissions/?p={{problem.problem_id}}">Problem Submissions</a>
 
         <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/submissions/">All Submissions</a>
@@ -20,14 +18,14 @@
                 <strong>Problem Statement</strong><br/>
                 {{problem.statement}}
             </p><br/><br/>
-        
+
 
             <div>
                 <form id="submission_file" action = "/contest/upload/" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ submission_form }}
                     <input type="hidden" name="problem_id" value={{problem.problem_id}}><br/>
-                    <input class="btn btn-danger" type="submit" value="Upload and Run">
+                    <input class="btn btn-danger" type="submit" value="Upload and Run" onclick="alert('FILE UPLOADED SUCCESSFULLY');">
                 </form>
             </div>
         </div>
