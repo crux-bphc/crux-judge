@@ -27,12 +27,12 @@
                         <span class="icon-bar"></span>
                     </button>
                     <!-- Add CRUx Logo here -->
-                    <a class="navbar-brand" href="#">CRUx Judge</a>
+                    <a class="navbar-brand" href="/contest/">Crux Judge</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav" style="float:right;">
                     	<!--
-                    	Add code to control login and logout buttons - use session.logged_in          
+                    	Add code to control login and logout buttons - use session.logged_in
                         -->
                         <li><a href="#">About</a></li>
                         {% if not user.is_authenticated %}
@@ -50,12 +50,12 @@
             </div>
         </div>
     </header>
-	<body style="background-image: url('{% static "images/bg2.jpg"%}')">
-		
+	<body style="background-image: url('{% static "images/bg4.jpg"%}')">
+
 		<!-- Add code for displaying flashed messages -->
-		
+
 		{% block body %} {% endblock %}
-		
+
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
         <script type="contest/text/javascript" src="static/js/bootstrap.min.js"></script>
     </body>

@@ -1,0 +1,3 @@
+sudo mkdir /sys/fs/cgroup/memory/test
+sudo mkdir /sys/fs/cgroup/cpuacct/test
+sudo mkdir /sys/fs/cgroup/pids/test

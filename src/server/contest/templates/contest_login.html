@@ -3,6 +3,15 @@
 {% block title %} Login {% endblock %}
 
 {% block body %}
+
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <br/><br/>
     <div class="container login-form">
         <h3 style="text-align: center; font-family: Abel; color:white; margin:10px;">Contest Login</h3>
@@ -15,7 +24,7 @@
                 {% for field in login_form %}
                     {% if field.errors %}
                         <div class="control-group error">
-                            <label style="color: white;" class="control-label">{{ field.label }}</label> 
+                            <label style="color: white;" class="control-label">{{ field.label }}</label>
                             <div class="controls">{{ field }}
                                 <span class="help-inline">
                                     {% for error in  field.errors %}{{ error }}{% endfor %}
@@ -24,7 +33,7 @@
                         </div>
                     {% else %}
                         <div class="control-group">
-                            <label style="color: white;" class="control-label">{{ field.label }}</label> 
+                            <label style="color: white;" class="control-label">{{ field.label }}</label>
                             <div class="controls">{{ field }}
                                 {% if field.help_text %}
                                     <p class="help-inline"><small>{{ field.help_text }}</small></p>
