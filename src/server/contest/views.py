@@ -44,7 +44,7 @@ def auth(request):
             # user_id = request.session['_auth_user_id']
             # username = User.objects.get(id = user_id).username
             request.session.set_expiry(0) #session expires when browser is closed
-
+            messages.success(request,"Welcome {}".format(user.username))
             return problemList(request)
 
         else:
@@ -73,17 +73,20 @@ def problemList(request):
 
     titles = []
     ids = []
+    contest_id = []
     problems = contest_problem.objects.all()
     user = User.objects.get(id=request.session['_auth_user_id'])
 
     for problem in problems:
         titles.append(problem.problem.title)
         ids.append(problem.problem_id)
+        contest_id.append(problem.id)
 
     context = {
-        'data':list(zip(ids,titles)),
+        'data':list(zip(contest_id,ids,titles)),
         'username':user.username
     }
+
     return render(request,'problem_page.html',context)
 
 
@@ -138,7 +141,7 @@ def display_submissions(request):
     if request.GET.keys():
         query = Submission.objects.filter(problem_id=request.GET['p'])
     else:
-        query = Submission.objects.all()
+        query = Submission.objects.all().order_by('-time')
     context = {
             "submissions" : query,
             "username" : user.username
