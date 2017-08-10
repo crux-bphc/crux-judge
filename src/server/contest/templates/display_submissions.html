@@ -4,10 +4,6 @@
 
 {% block body %}
 
-    <div class="alert alert-success">
-        Welcome <strong> {{ username }} </strong>
-    </div>
-
     <div class="container">
         <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/">View All Problems</a>
         <h2>Submissions</h2>
@@ -16,7 +12,7 @@
                 <table class="table table-hover table-bordered">
                     <thead>
                         <tr class="table-header">
-                            <th class="cell">S.No</th>
+                            <!-- <th class="cell">S.No</th> -->
                             <th class="cell">Username</th>
                             <th class="cell">Problem Title</th>
                             <th class="cell">Score</th>
@@ -26,7 +22,7 @@
                     <tbody>
                         {% for record in submissions %}
                             <tr class="active">
-                                <td>{{ record.id }}</td>
+                                <!-- <td>{{ record.id }}</td> -->
                                 <td>{{ record.user.username }}</td>
                                 <td>{{ record.problem.title }}</td>
                                 <td>{{ record.score }}</td>
