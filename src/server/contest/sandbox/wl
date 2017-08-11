@@ -1,0 +1,10 @@
+uname
+brk
+arch_prctl
+readlink
+access
+fstat
+read
+lseek
+exit_group
+write

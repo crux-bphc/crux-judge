@@ -1,19 +1,52 @@
-<html>
-    <head>
-        <title>
-            LOGIN
-        </title>
-    </head>
-    <body>
-        <h2>CONTEST LOGIN</h2>
-        <br><br>
-        <form action="/contest/auth/" method="POST" enctype="multipart/form-data">
+{% extends "header.html" %}
+
+{% block title %} Login {% endblock %}
+
+{% block body %}
+
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <br/><br/>
+    <div class="container login-form">
+        <h3 style="text-align: center; font-family: Abel; color:white; margin:10px;">Contest Login</h3>
+        <hr>
+        <form style="margin:10px;" action="/contest/auth/" method="POST" enctype="multipart/form-data">
 
             {% csrf_token %}
-            {{ login_form }}
 
-            <br><br><input type="submit" value="Login">
+            <fieldset>
+                {% for field in login_form %}
+                    {% if field.errors %}
+                        <div class="control-group error">
+                            <label style="color: white;" class="control-label">{{ field.label }}</label>
+                            <div class="controls">{{ field }}
+                                <span class="help-inline">
+                                    {% for error in  field.errors %}{{ error }}{% endfor %}
+                                </span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="control-group">
+                            <label style="color: white;" class="control-label">{{ field.label }}</label>
+                            <div class="controls">{{ field }}
+                                {% if field.help_text %}
+                                    <p class="help-inline"><small>{{ field.help_text }}</small></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </fieldset>
+            <br/><br/>
+            <input class="btn btn-danger" type="submit" value="Login" style="width: 200px;">
 
-        </forms>
-    </body>
-</html>
+        </form>
+    </div>
+{% endblock %}
+

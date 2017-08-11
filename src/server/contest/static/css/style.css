@@ -1,0 +1,74 @@
+.navbar-header > a{
+	font-family: Josefin Sans;
+}
+
+.nav > li > a{
+	font-family: Abel;
+}
+
+.heading{
+	;
+}
+
+.navbar-brand,
+.navbar-nav li a {
+    line-height: 80px;
+    height: 80px;
+    padding-top: 0;
+    font-size: 25px;
+}
+
+.login-form {
+    margin-top: 100px;
+    background: rgba(19, 35, 47, 0.7);
+    min-width: 220px;
+    max-width: 340px;
+    min-height: 290px;
+    border: 1px solid silver;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.control-group {
+	text-align: left;
+}
+
+.control-group > label{
+	margin-top: 10px;
+	margin: 10px auto auto 5px;
+}
+
+.controls > input{
+	width: 280px;
+	height: 30px;
+	border-radius: 10px;
+	padding-left: 10px;
+	margin: auto;
+	font-size: 18px;
+}
+
+.table .table-header{
+	background: #222;
+	color: white;
+}
+
+.table .table-header .cell{
+	padding: 20px;
+}
+
+@media screen and (max-width: 640px){
+    table {
+        overflow-x: auto;
+        display: block;
+    }
+    .table .table-header .cell{
+        padding:20px 5px;
+    }
+}
+
+.problem{
+	border: 0.5px solid black;
+	padding: 10px;
+	margin: 2px;
+	border-radius: 10px;
+}

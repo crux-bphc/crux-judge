@@ -1,0 +1,38 @@
+{% extends "header.html" %}
+
+{% block title %} Submissions {% endblock %}
+
+{% block body %}
+
+    <div class="container">
+        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/">View All Problems</a>
+        <h2>Submissions</h2>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr class="table-header">
+                            <!-- <th class="cell">S.No</th> -->
+                            <th class="cell">Username</th>
+                            <th class="cell">Problem Title</th>
+                            <th class="cell">Score</th>
+                            <th class="cell">Submission Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in submissions %}
+                            <tr class="active">
+                                <!-- <td>{{ record.id }}</td> -->
+                                <td>{{ record.user.username }}</td>
+                                <td>{{ record.problem.title }}</td>
+                                <td>{{ record.score }}</td>
+                                <td>{{record.time}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
