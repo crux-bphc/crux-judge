@@ -13,10 +13,13 @@ from ipware.ip import get_ip
 from django.utils import timezone
 from django.contrib import messages
 
+
 # Create your views here.
 def index(request):
     # request.session.clear_expired()
+
     print(timezone.localtime())
+
     if request.user.is_authenticated():
         return problemList(request)
 
@@ -45,6 +48,7 @@ def auth(request):
             # username = User.objects.get(id = user_id).username
             request.session.set_expiry(0) #session expires when browser is closed
             messages.success(request,"Welcome {}".format(user.username))
+
             return problemList(request)
 
         else:
@@ -73,13 +77,16 @@ def problemList(request):
 
     titles = []
     ids = []
+
     contest_id = []
+
     problems = contest_problem.objects.all()
     user = User.objects.get(id=request.session['_auth_user_id'])
 
     for problem in problems:
         titles.append(problem.problem.title)
         ids.append(problem.problem_id)
+
         contest_id.append(problem.id)
 
     context = {
@@ -87,10 +94,12 @@ def problemList(request):
         'username':user.username
     }
 
+
     return render(request,'problem_page.html',context)
 
 
 def upload(request):
+
 
     if request.method == "POST":
 
@@ -101,6 +110,7 @@ def upload(request):
         submission_file_name = user.username + '_' + str(problem.problem_id) + '.c'
 
         uploaded_filedata = request.FILES['submission_file']
+
         #creates /contest/submissions folder if does not exist
         if not os.path.isdir("contest/submissions"):
             os.makedirs("contest/submissions")
@@ -113,6 +123,7 @@ def upload(request):
         for chunk in uploaded_filedata.chunks():
             submission_file.write(chunk)
         submission_file.close()
+
 
         submission = Submission.objects.create(
                         problem=problem.problem,
@@ -127,11 +138,13 @@ def upload(request):
 
         return HttpResponse(status=204)
 
+
     else:
         return HttpResponse("/contest/upload/")
 
 def logout_view(request):
     logout(request)
+
     messages.info(request,"You have been logged out")
     return index(request)
 
@@ -147,3 +160,4 @@ def display_submissions(request):
             "username" : user.username
     }
     return render(request,"display_submissions.html",context)
+

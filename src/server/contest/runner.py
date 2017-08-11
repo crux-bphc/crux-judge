@@ -11,6 +11,7 @@ class Runner():
     BASE_TEST_CASES_DIR = os.getcwd() + '/contest/testcases'
     BASE_SUBMISSION_DIR = os.getcwd() + '/contest/submissions'
 
+
     def __init__(self,submission):
         # Takes problem and user object as arguments
         self.submission = submission
@@ -20,6 +21,7 @@ class Runner():
         self.inputs(self.testcase_dir)
         self.submission_file = self.BASE_SUBMISSION_DIR + '/' + self.user + '_' + str(self.problem_id) + '.c'
         self.MAX_SCORE = contest_problem.objects.get(problem_id=self.problem_id).max_score
+
 
     def inputs(self,testcase_dir):
         # Prepare input files
@@ -38,12 +40,16 @@ class Runner():
 
         # for testing
         print("\n\nTEST CASES RESPONSES : ",end='')
+
         print(self.tests)
+
 
     def check_result(self,input_file):
         result = self.execute(self.submission_file,input_file)
         try:
+
             output = result['output']
+
             output_file_path = self.testcase_dir + '/' + 'output' + input_file.split('input')[1]
             output_file = open(output_file_path,'r')
             expected_output = output_file.read()
@@ -71,8 +77,10 @@ class Runner():
         file_name = os.path.basename(file_path)
         # name of the file without extension
         file_name_without_extension = file_name.split('.')[0]
+
         #executable is stored in /sandbox/jail/executable
         executable_path = os.getcwd() + "/contest/sandbox/jail/executable"
+
 
         #printing for testing purposes
         # print ("file_path: "+file_path)
@@ -80,11 +88,13 @@ class Runner():
         # print ("file dir : "+file_dir)
         # print ("file name : "+file_name)
         # print ("file name without extension : "+file_name_without_extension)
+
         # print("executable file directory:" + executable_path)
 
         try:
             # runs the terminal command - compile (gcc path/name.c -o path/name)
             process_compile = subprocess.run(["gcc",file_path,"-o", executable_path,"--static"],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+
             # debug statements: 'process_compile' var holds returned process data
             # print ("\nprocess_compile stdout:",process_compile.stdout)
             # print ("process_compile stderr:",process_compile.stderr)
@@ -104,6 +114,7 @@ class Runner():
                 input_file=open(input_file_path)
             except FileNotFoundError:
                 input_file=subprocess.PIPE
+
 
             result = self.safe_execution(input_file_path)
             return result
@@ -138,3 +149,4 @@ class Runner():
                 result['error'] = "Memory Limit Exceeded"
 
         return result
+
