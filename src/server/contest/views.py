@@ -54,7 +54,7 @@ def auth(request):
     else:
         return HttpResponse("contest/auth/")
 
-def problem(request,problem_id):
+def problem(request,problem_id,submission=None):
 
     if request.user.is_authenticated:
         problem = all_problems.objects.get(problem_id=problem_id)
@@ -63,7 +63,8 @@ def problem(request,problem_id):
         context = {
             "submission_form" : submission_form,
             "problem" : problem,
-            "username" : user.username
+            "username" : user.username,
+            "submission" : submission
         }
         return render(request,'problem.html',context)
     else:
@@ -96,9 +97,9 @@ def upload(request):
 
         ip_address = get_ip(request)
         problem_id = request.POST.get('problem_id')
-        problem = contest_problem.objects.get(problem_id=problem_id)
+        problem_ = contest_problem.objects.get(problem_id=problem_id)
         user = User.objects.get(id=request.session['_auth_user_id'])
-        submission_file_name = user.username + '_' + str(problem.problem_id) + '.c'
+        submission_file_name = user.username + '_' + str(problem_.problem_id) + '.c'
 
         uploaded_filedata = request.FILES['submission_file']
         #creates /contest/submissions folder if does not exist
@@ -115,18 +116,17 @@ def upload(request):
         submission_file.close()
 
         submission = Submission.objects.create(
-                        problem=problem.problem,
+                        problem=problem_.problem,
                         user=user,
                         ip=ip_address,
-                        local_file=submission_file_name
+                        local_file=uploaded_filedata
                         )
 
         evaluate = runner.Runner(submission)
         evaluate.check_all()
         evaluate.score_obtained()
 
-        return HttpResponse(status=204)
-
+        return problem(request,problem_.problem_id,evaluate)
     else:
         return HttpResponse("/contest/upload/")
 
