@@ -15,8 +15,7 @@
             <h2>{{problem.problem_id}}. {{problem.title}}</h2>
             <hr>
             <p>
-                <strong>Problem Statement</strong><br/>
-                {{problem.statement}}
+                {{problem.statement|linebreaksbr}}
             </p><br/><br/>
 
 
@@ -28,6 +27,25 @@
                     <input class="btn btn-danger" type="submit" value="Upload and Run" onclick="alert('FILE UPLOADED SUCCESSFULLY');">
                 </form>
             </div>
+
+            <div>
+                {% if submission %}
+                    <ol type='1'>
+                        {% for test in submission.tests %}
+                            <li>
+                                {% if test is 0 %} <img src="/../static/images/right.png" height="15" width="15"> Pass
+                                {% elif test is 1 %} <img src="/../static/images/wrong.png" height="15" width="15"> Compilation Error
+                                {% elif test is 2 %} <img src="/../static/images/wrong.png" height="15" width="15"> Runtime Error
+                                {% elif test is 3 %} <img src="/../static/images/wrong.png" height="15" width="15"> Memory Limit Exceeded
+                                {% elif test is 4 %} <img src="/../static/images/wrong.png" height="15" width="15"> Time Limit Exceeded
+                                {% elif test is 5 %} <img src="/../static/images/wrong.png" height="15" width="15"> Incorrect Answer
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% endif %}
+            </div>
+
         </div>
     </div>
 {% endblock %}

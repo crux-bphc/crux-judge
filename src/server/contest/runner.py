@@ -28,9 +28,9 @@ class Runner():
 
     def check_all(self):
     # traverses thru all input cases and saves return code for all cases in tests[]
-    # Return code : 1=successful;correct answer
-    #               0=wrong answer
-    #               -1=compilation/runtime error
+    # Return code : 0=successful;correct answer
+    #               5=wrong answer
+    #               else error
         self.tests=[]
         for case in self.input_files:
             path = self.testcase_dir + '/' + case
@@ -41,6 +41,15 @@ class Runner():
         print(self.tests)
 
     def check_result(self,input_file):
+        """
+            self.tests[] stores return codes of all cases
+            0 : correct answer
+            1 : compilation error
+            2 : runtime error
+            3 : memory limit exceeded
+            4 : time limit exceeded
+            5 : incorrect answer
+        """
         result = self.execute(self.submission_file,input_file)
         try:
             output = result['output']
@@ -49,16 +58,14 @@ class Runner():
             expected_output = output_file.read()
             if output == expected_output :
                 # correct answer
-                self.tests.append(1)
+                self.tests.append(0)
             else:
                 # incorrect answer
-                self.tests.append(0)
+                self.tests.append(5)
 
         except KeyError:
             # compilation/runtime error
-            self.tests.append(-1)
-            print("Test cases responses : ",end='')
-            print(result['error'])
+            self.tests.append(result['error'])
 
     def execute(self,file_path,input_file_path):
         # runs files on local computer. file_path is the name of the file with absolute path
@@ -91,9 +98,10 @@ class Runner():
 
         #if compilation is not clear, then handle it
         except subprocess.CalledProcessError as e:
-            print ("\nCompilation Error\n")
-            print(e)
-            result['error']='Compilation Error'
+            result = {}
+            # print ("\nCompilation Error\n")
+            # print(e)
+            result['error']=1
             return result
             # exit(1)
 
@@ -109,8 +117,9 @@ class Runner():
             return result
 
     def score_obtained(self):
+        # traverses thru test case responses to calculate total score. score = (total score alloted to the problem) * (fraction of correct answers)
         responses = self.tests
-        correct_answer = responses.count(1)
+        correct_answer = responses.count(0)
         score = correct_answer/len(responses) * self.MAX_SCORE
         self.submission.score = score
         self.submission.save()
@@ -131,10 +140,7 @@ class Runner():
             output = open(output_file,'r')
             result['output'] = output.read()
         except subprocess.CalledProcessError as e:
-            returncode = e.returncode
-            if returncode == 4:
-                result['error'] = "Time limit Exceeded"
-            elif returncode == 3:
-                result['error'] = "Memory Limit Exceeded"
+            # 2 - runtime error, 3 - memory limit exceeded, 4 - time limit exceeded
+            result['error'] = e.returncode
 
         return result
