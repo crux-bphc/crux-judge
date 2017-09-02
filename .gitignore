@@ -90,4 +90,4 @@ ENV/
 
 
 # Submissions Files
-src/server/submissions/*
+src/server/submissions
