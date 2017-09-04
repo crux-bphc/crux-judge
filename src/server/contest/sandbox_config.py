@@ -1,6 +1,6 @@
 import os
 
-EXE = os.getcwd() + "/contest/sandbox/a.out"
+EXE = os.getcwd() + "/contest/sandbox/sandbox-exe"
 MEMORY_LIMIT = "1M"
 TIME_LIMIT = "1000000000" #in nano( 10^-9 ) seconds
 MAX_PIDS = "4"
