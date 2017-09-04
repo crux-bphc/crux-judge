@@ -11,6 +11,7 @@ from datetime import datetime
 from . import runner
 from ipware.ip import get_ip
 from django.utils import timezone
+from django.contrib import messages
 
 # Create your views here.
 def index(request):
@@ -87,7 +88,7 @@ def problemList(request):
 
 
 def upload(request):
-    print()
+
     if request.method == "POST":
 
         ip_address = get_ip(request)
@@ -121,18 +122,19 @@ def upload(request):
         evaluate.check_all()
         evaluate.score_obtained()
 
-        return HttpResponse("File uploaded successfully")
+        return HttpResponse(status=204)
 
     else:
         return HttpResponse("/contest/upload/")
 
 def logout_view(request):
     logout(request)
-    return HttpResponse("You're logged out.")
+    messages.info(request,"You have been logged out")
+    return index(request)
 
 def display_submissions(request):
     user = User.objects.get(id=request.session['_auth_user_id'])
-    print(request.GET.keys())
+
     if request.GET.keys():
         query = Submission.objects.filter(problem_id=request.GET['p'])
     else:
