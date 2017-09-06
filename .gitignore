@@ -94,3 +94,9 @@ src/server/submissions
 
 # Executable in sandbox
 src/server/contest/sandbox/jail/executable
+
+# Sandbox output file
+src/server/contest/sandbox/output
+
+# Contest testcases
+src/server/contest/testcases/*
