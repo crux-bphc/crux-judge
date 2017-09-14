@@ -4,16 +4,16 @@
 
 {% block body %}
 
-    <div class="container-fluid">
-        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/">All Problems</a>
+    <div>
+        <div class="q-header">
+            <a href = "/contest/">All Problems</a>
 
-        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/submissions/?p={{problem.problem_id}}">Problem Submissions</a>
+            <a href = "/contest/submissions/?p={{problem.problem_id}}">Problem Submissions</a>
 
-        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/submissions/">All Submissions</a>
-        <br/><br/>
-        <div class="jumbotron">
+            <a href = "/contest/submissions/">All Submissions</a>
+        </div>
+        <div class="p-desc">
             <h2>{{problem.problem_id}}. {{problem.title}}</h2>
-            <hr>
             <p>
                 {{problem.statement|linebreaksbr}}
             </p><br/><br/>
@@ -33,6 +33,7 @@
                     <ol type='1'>
                         {% for test in submission.tests %}
                             <li>
+                                <!-- TODO: Use fontawesome instead of images -->
                                 {% if test is 0 %} <img src="/../static/images/right.png" height="15" width="15"> Pass
                                 {% elif test is 1 %} <img src="/../static/images/wrong.png" height="15" width="15"> Compilation Error
                                 {% elif test is 2 %} <img src="/../static/images/wrong.png" height="15" width="15"> Runtime Error

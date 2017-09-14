@@ -16,48 +16,34 @@
         <link href="https://fonts.googleapis.com/css?family=Abel|Josefin+Sans|Dancing+Script|Sofia" rel="stylesheet">
 
     </head>
-    <header>
-    	<div class="navbarn navbar-inverse navmenu" role="navigation">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <!-- Add CRUx Logo here -->
-                    <a class="navbar-brand" href="/contest/">Crux Judge</a>
-                </div>
-                <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav" style="float:right;">
-                    	<!--
-                    	Add code to control login and logout buttons - use session.logged_in
-                        -->
-                        <li><a href="#">About</a></li>
-                        {% if not user.is_authenticated %}
-                            <li><a href="/contest/">Dashboard</a></li>
-                        {% else %}
-                            <li><a href="/contest/">{{ user.get_username }}</a></li>
-                        {% endif %}
-                        {% if user.is_authenticated %}
-                            <li><a href="/contest/logout/" onclick="alert(LOGGED OUT);">Logout</a></li>
-                        {% else %}
-                            <li><a href="/contest/">Login</a></li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
+
+	<body>
+    <div id="wrapper">
+        <!-- TODO: Fix navbar appearing on top of page content -->
+        <div class="nav-btn">
+            <input type="checkbox" />
+                <span></span>
+                <span></span>
+                <span></span>
+            <ul id="menu">
+                {% if not user.is_authenticated %}
+                    <li><a href="/contest/">Dashboard</a></li>
+                {% else %}
+                    <li><a href="/contest/">{{ user.get_username }}</a></li>
+                {% endif %}
+                {% if user.is_authenticated %}
+                    <li><a href="/contest/logout/" onclick="alert(LOGGED OUT);">Logout</a></li>
+                {% else %}
+                    <li><a href="/contest/">Login</a></li>
+                {% endif %}
+            </ul>
         </div>
-    </header>
-	<body style="background-image: url('{% static "images/bg4.jpg"%}')">
 
-		<!-- Add code for displaying flashed messages -->
+        {% block body %} {% endblock %}
+    </div>
 
-		{% block body %} {% endblock %}
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-        <script type="contest/text/javascript" src="static/js/bootstrap.min.js"></script>
     </body>
 </html>
 
