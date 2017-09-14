@@ -5,30 +5,28 @@
 {% block body %}
     {% csrf_token %}
 
-    {% if messages %}
+    <!-- {% if messages %}
         <div class="alert alert-success">
             {% for message in messages %}
                 {{ message }}
             {% endfor %}
         </div>
-    {% endif %}
+    {% endif %} -->
 
     <br><br>
     <div class="container">
-        <a class="btn btn-primary" style="color:white; text-decoration: None" href = "/contest/submissions/">View All Submissions</a>
+        <div class="p-header">
+            <a class="p-button" href = "/contest/submissions/">View All Submissions</a>
 
-        <h3>PROBLEMS</h3>
-        <br>
+            <h3>Problems</h3>
+        </div>
 
         {% for contest_id,id, title in data %}
             {% csrf_token %}
-            <div class="row problem" style="background-color: white;">
-                <h3 style="margin-left: 10px;">{{ contest_id }}. <a style="text-decoration: None" href="/contest/problem/{{id}}/">{{ title }}</a></h3>
-                <p style="margin-left: 10px;">
-                    <!-- <strong>Problem Setter: </strong>Anonymous<br/> -->
-                    <!-- <strong>Submissions: </strong>#</p> -->
+            <div class="row problem">
+                <h3>{{ contest_id }}. <a href="/contest/problem/{{id}}/">{{ title }}</a></h3>
+                <p>
             </div>
-            <br/>
         {% endfor %}
 
     </div>
