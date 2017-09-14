@@ -1,0 +1,7 @@
+python3 src/server/manage.py makemigrations
+python3 src/server/manage.py migrate
+python3 src/server/manage.py createsuperuser
+
+mkdir -p src/server/contest/submissions
+mkdir -p src/server/contest/testcases
+mkdir -p src/server/contest/sandbox/jail

@@ -22,7 +22,7 @@ class Runner():
         self.MAX_SCORE = contest_problem.objects.get(problem_id=self.problem_id).max_score
 
     def inputs(self,testcase_dir):
-        # Prepare input files
+        """ Prepare input files """
         self.input_files = fnmatch.filter(os.listdir(testcase_dir),'input*')
         self.input_files.sort()
 
@@ -68,7 +68,7 @@ class Runner():
             self.tests.append(result['error'])
 
     def execute(self,file_path,input_file_path):
-        # runs files on local computer. file_path is the name of the file with absolute path
+        """ runs files on local computer. file_path is the name of the file with absolute path """
 
         #file_path cotains the name of the file with path and extension
         file_path_without_extension = os.path.splitext(file_path)[0]
@@ -117,7 +117,7 @@ class Runner():
             return result
 
     def score_obtained(self):
-        # traverses thru test case responses to calculate total score. score = (total score alloted to the problem) * (fraction of correct answers)
+        """ traverses thru test case responses to calculate total score. score = (total score alloted to the problem) * (fraction of correct answers) """
         responses = self.tests
         correct_answer = responses.count(0)
         score = correct_answer/len(responses) * self.MAX_SCORE
@@ -128,7 +128,7 @@ class Runner():
         return score
 
     def safe_execution(self,input_file_path):
-
+        """ Uses sandbox to execute compiled executables of submitted C code """
         INPUT_FILE = input_file_path
         result = {}
 

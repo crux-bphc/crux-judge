@@ -29,6 +29,7 @@ def index(request):
     return render(request,'contest_login.html',context)
 
 def auth(request):
+    """ Checks login information entered by user """
     if request.method == "POST":
 
         form = LoginForm(request.POST)
@@ -55,7 +56,7 @@ def auth(request):
         return HttpResponse("contest/auth/")
 
 def problem(request,problem_id,submission=None):
-
+    """ Renders the page that lists all problems of the contest"""
     if request.user.is_authenticated:
         problem = all_problems.objects.get(problem_id=problem_id)
         user = User.objects.get(id=request.session['_auth_user_id'])
@@ -71,7 +72,7 @@ def problem(request,problem_id,submission=None):
         return HttpResponse("Session Expired. Login again")
 
 def problemList(request):
-
+    """ Renders the page for particular problem """
     titles = []
     ids = []
     contest_id = []
@@ -92,7 +93,10 @@ def problemList(request):
 
 
 def upload(request):
-
+    """
+    Receives C file.
+    Passes Submission object to runner class for compilation, execution and evaluation.
+     """
     if request.method == "POST":
 
         ip_address = get_ip(request)
@@ -136,6 +140,7 @@ def logout_view(request):
     return index(request)
 
 def display_submissions(request):
+    """ Renders submissions page to display submissions made till the given time """
     user = User.objects.get(id=request.session['_auth_user_id'])
 
     if request.GET.keys():
