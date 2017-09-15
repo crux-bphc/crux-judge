@@ -22,8 +22,9 @@ It uses Django framework to host the server and is mainly written in Python3. My
 
 
 ## Index
-* Go through [Installation Instructions](docs/install.md) to set up the project.
-* Also read [this](docs/structure.md) to better understand the working of the project.
+
+* Go through [Installation Instructions](install) to set up the project.
+* Also read [this](structure) to better understand the working of the project.
 
 
 ## Contributors
@@ -37,7 +38,8 @@ It uses Django framework to host the server and is mainly written in Python3. My
 
 
 ## License
-The software is released under MIT [License](LICENSE) <br/>
+The software is released under MIT License
+
 Copyright (c) 2017 [CRUx-The Programming & Computing Club](https://github.com/crux-BPHC) of [BITS-Pilani Hyderabad Campus](http://www.bits-pilani.ac.in/hyderabad)
 
 <img src="https://scontent.fbom1-1.fna.fbcdn.net/v/t1.0-1/p200x200/17904452_1491990900819437_3846562565023385004_n.png?oh=4a26af21c3764e36319197a532de47c7&oe=59DFB8EC" width="100">
