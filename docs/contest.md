@@ -56,10 +56,10 @@ At least one testcase per problem is required.
 sudo python3 manage.py runserver <ip_address>:8000
 ```
 `<ip_address>` is optional.
-If providing the address, make sure the ip address is added in `ALLOWED_HOSTS` list in [settings.py](src/server/judge/settings.py)
+If providing the address, make sure the ip address is added in `ALLOWED_HOSTS` list in `src/server/judge/settings.py`.
 If not providing the ip address parameter, the server is hosted by default on 127.0.0.1:8000.
 
-3. Populate student and problem records using [admin](docs/admin.md) or use  [add_student_records](src/server/add_student_records.py) script (under development) to add records in bulk.
+3. Populate student and problem records using [admin](admin) or use the `src/server/add_student_records.py` script (under development) to add records in bulk.
 
 4. Open `<ip_address>/contest` to access contest. This will render the page which lists all the problems added to the contest.
 

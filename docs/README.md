@@ -1,9 +1,11 @@
 # Crux Judge
 
 This is a programming judge which currently supports C language.
+
 It uses Django framework to host the server and is mainly written in Python3. MySQL is the database of choice.
 
 ## Features
+
 1. Problem bank
 2. Partial marking using testcases
 3. Safe execution of executables using [sandbox]((https://github.com/ajay0/sandbox) (written in C)
@@ -12,6 +14,7 @@ It uses Django framework to host the server and is mainly written in Python3. My
 
 
 ## Techs Used
+
 1. Python3
 2. Django web server framework
 3. MySQL server
@@ -23,11 +26,16 @@ It uses Django framework to host the server and is mainly written in Python3. My
 
 ## Index
 
-* Go through [Installation Instructions](install) to set up the project.
-* Also read [this](structure) to better understand the working of the project.
+We are currently trying to write more documentation. This is the list of currently written pages:
 
+* **[Installation Instructions](install)** - Guide on setting up the project.
+* **[Running Instructions](run)** - Instruction on how to start the server.
+* **[Directory Structure](structure)** - Basic guide to understand the working of the project.
+* **[ContestS](contest)** - Basic directory structure and usage guide for contests.
+* **[Admin Portal](admin)** - Guide on how to use the Django Admin Portal to manage the project.
 
 ## Contributors
+
 1. [Ajay Krishna](https://github.com/ajay0)
 2. [Anirud Samala](https://github.com/eragon512)
 3. [Ankit Anand](https://github.com/ankit0905)
@@ -38,6 +46,7 @@ It uses Django framework to host the server and is mainly written in Python3. My
 
 
 ## License
+
 The software is released under MIT License
 
 Copyright (c) 2017 [CRUx-The Programming & Computing Club](https://github.com/crux-BPHC) of [BITS-Pilani Hyderabad Campus](http://www.bits-pilani.ac.in/hyderabad)
