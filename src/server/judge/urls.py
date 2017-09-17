@@ -19,6 +19,6 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^', include('contest.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^trial/', include('trial.urls')),
+    url(r'^bank/', include('bank.urls')),
     url(r'^contest/', include('contest.urls'))
 ]
