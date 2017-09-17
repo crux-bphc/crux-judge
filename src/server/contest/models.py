@@ -8,7 +8,7 @@ from django.utils import timezone
 @python_2_unicode_compatible
 
 class Problem(models.Model):
-    problem = models.ForeignKey('trial.problem',verbose_name='problem')
+    problem = models.ForeignKey('bank.problem',verbose_name='problem')
     max_score = models.FloatField(default=0)
     class Meta:
         verbose_name = 'Contest Problem'
@@ -18,7 +18,7 @@ class Problem(models.Model):
 
 class Submission(models.Model):
     id = models.AutoField(primary_key = True)
-    problem = models.ForeignKey('trial.problem')
+    problem = models.ForeignKey('bank.problem')
     score = models.DecimalField(default=0,max_digits=5,decimal_places=2)
     time = models.DateTimeField(auto_now_add=True,verbose_name='Submission Time')
     user = models.ForeignKey(User,verbose_name='submitted-by')

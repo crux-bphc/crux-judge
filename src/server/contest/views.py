@@ -4,7 +4,7 @@ from .forms import LoginForm,SubmissionForm
 from .models import Problem as contest_problem,Submission
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
-from trial.models import Problem as all_problems
+from bank.models import Problem as all_problems
 from time import sleep
 import os
 from datetime import datetime
