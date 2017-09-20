@@ -203,11 +203,11 @@ body {
 #menu
 {
 	position: absolute;
-	width: 150px;
+	width: 300px;
 	margin: -100px 0 0 -50px;
 	padding: 50px;
 	padding-top: 125px;
-	background-color: rgba(0, 0, 0, 0.7);
+	background-color: white;
 	list-style-type: none;
 	-webkit-font-smoothing: antialiased;
 	/* to stop flickering of text in safari */
