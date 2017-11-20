@@ -87,7 +87,7 @@ static char *createPidDir(const char *cg, pid_t pid) {
   char *pid_dir = getPidDir(cg, pid);
   // TODO: check what permissions are required
   if (mkdir(pid_dir, S_IRWXU) == -1) {
-    printErr(__FILE__, __LINE__, "mkdir failed", 1, errno);
+    printErr("mkdir failed: errno: %d", errno);
     free(pid_dir);
     return NULL;
   }
@@ -104,17 +104,17 @@ static int writeToFile(
   sprintf(path, "%s/%s", dir, file_name);
   int f = open(path, O_WRONLY);
   if (f == -1) {
-    printErr(__FILE__, __LINE__, "open failed", 1, errno);
+    printErr("open failed: errno: %d", errno);
     free(path);
     return -1;
   }
   if (write(f, str, sizeof(char) * strlen(str)) == -1) {
-    printErr(__FILE__, __LINE__, "write failed", 1, errno);
+    printErr("write failed: errno: %d", errno);
     free(path);
     return -1;
   }
   if (close(f) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
     free(path);
     return -1;
   }
@@ -131,7 +131,7 @@ static int addToTasksFile(const char *cg, pid_t pid) {
   char *buf = malloc((int)ceil(log10(pid)) + 1);
   sprintf(buf, "%d", pid);
   if (writeToFile(pid_dir, "tasks", buf) == -1) {
-    printErr(__FILE__, __LINE__, "writeToFile failed", 0, 0);
+    printErr("writeToFile failed");
     free(pid_dir);
     free(buf);
     return -1;
@@ -170,7 +170,7 @@ static int pollFileContent(
   while (1) {
     // content_max_len - 1 to accomodate a '\0'
     if ((bytes_read = read(fd, content, content_max_size - 1)) == -1) {
-      printErr(__FILE__, __LINE__, "read failed", 1, errno);
+      printErr("read failed: errno: %d", errno);
       free(content);
       return -1;
     }
@@ -189,14 +189,13 @@ static int pollFileContent(
     }
 
     if (lseek(fd, 0, SEEK_SET) == -1) {
-      printErr(__FILE__, __LINE__, "lseek failed", 1, errno);
+      printErr("lseek failed: errno: %d", errno);
       free(content);
       return -1;
     }
 
     if (nanosleep(&req, NULL) == -1) {
-      printErr(__FILE__, __LINE__, "nanosleep interrupted by a signal \
-        handler or encountered an error", 1, errno);
+      printErr("nanosleep interrupted by a signal handler or encountered an error: errno: %d", errno);
       free(content);
       return -1;
     }
@@ -216,10 +215,10 @@ static void memListenerCleanup(void *arg) {
 
   MemListenerCleanupPayload *mlcp = (MemListenerCleanupPayload *) arg;
   if (close(mlcp -> mlp -> oomefd) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
   }
   if (close(mlcp -> mlp -> mocfd) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
   }
   free(mlcp -> mlp -> pid_dir);
   free(mlcp -> mlp);
@@ -246,25 +245,21 @@ static void *memListener(void *arg) {
   uint64_t u;
   ssize_t ret = read(mlp -> oomefd, &u, sizeof(uint64_t));
   if (ret == -1) {
-    printErr(__FILE__, __LINE__, "read failed", 1, errno);
+    printErr("read failed: errno: %d", errno);
     *(mlp -> exceeded) = FATAL_ERROR_EXCEED;
   } else if (ret != sizeof(uint64_t)) {
-    printErr(__FILE__, __LINE__, "Unexpected return value from read", 1, errno);
+    printErr("Unexpected return value from read: errno: %d", errno);
     *(mlp -> exceeded) = FATAL_ERROR_EXCEED;
   } else {
     *(mlp -> exceeded) = MEM_LIM_EXCEED;
   }
   mlp -> tp -> skip = malloc(sizeof(pthread_t));
   *(mlp -> tp -> skip) = pthread_self();
-  #ifdef SB_VERBOSE
-  printf("terminate called - memListener\n");
-  #endif
+  printDebug("terminate called - memListener");
   if (terminate(mlp -> tp) == -1) {
-    printErr(__FILE__, __LINE__, "terminate failed", 0, 0);
+    printErr("terminate failed");
   }
-  #ifdef SB_VERBOSE
-  printf("terminate returned - memListener\n");
-  #endif
+  printDebug("terminate returned - memListener");
 
   pthread_cleanup_pop(0);
   pthread_exit(NULL);
@@ -292,25 +287,25 @@ static int setMemLimit(
 
   char *pid_dir;
   if ((pid_dir = createPidDir(memory_cg, pid)) == NULL) {
-    printErr(__FILE__, __LINE__, "createPidDir failed", 0, 0);
+    printErr("createPidDir failed");
     free(pid_dir);
     return -1;
   }
   // disable swap for the sandboxed executable because mem limits on swap
   // might not be available on all kernels
   if (writeToFile(pid_dir, "memory.swappiness", "0") == -1) {
-    printErr(__FILE__, __LINE__, "writeToFile failed", 0, 0);
+    printErr("writeToFile failed");
     if (rmdir(pid_dir) == -1) {
-      printErr(__FILE__, __LINE__, "rmdir failed", 1, errno);
+      printErr("rmdir failed: errno: %d", errno);
     }
     free(pid_dir);
     return -1;
   }
   // disable oom killer, hence the process will be paused when under oom
   if (writeToFile(pid_dir, "memory.oom_control", "1") == -1) {
-    printErr(__FILE__, __LINE__, "writeToFile failed", 0, 0);
+    printErr("writeToFile failed");
     if (rmdir(pid_dir) == -1) {
-      printErr(__FILE__, __LINE__, "rmdir failed", 1, errno);
+      printErr("rmdir failed: errno: %d", errno);
     }
     free(pid_dir);
     return -1;
@@ -318,9 +313,9 @@ static int setMemLimit(
   // limit is rounded to greatest multiple of page size smaller than
   // |mem|, automatically
   if (writeToFile(pid_dir, "memory.limit_in_bytes", mem) == -1) {
-    printErr(__FILE__, __LINE__, "writeToFile failed", 0, 0);
+    printErr("writeToFile failed");
     if (rmdir(pid_dir) == -1) {
-      printErr(__FILE__, __LINE__, "rmdir failed", 1, errno);
+      printErr("rmdir failed: errno: %d", errno);
     }
     free(pid_dir);
     return -1;
@@ -335,15 +330,15 @@ static int setMemLimit(
   free(moc_path);
   if (writeToFile(pid_dir, "cgroup.event_control", buf) == -1) {
     free(buf);
-    printErr(__FILE__, __LINE__, "writeToFile failed", 0, 0);
+    printErr("writeToFile failed");
     if (close(oomefd) == -1) {
-      printErr(__FILE__, __LINE__, "close failed", 1, errno);
+      printErr("close failed: errno: %d", errno);
     }
     if (close(mocfd) == -1) {
-      printErr(__FILE__, __LINE__, "close failed", 1, errno);
+      printErr("close failed: errno: %d", errno);
     }
     if (rmdir(pid_dir) == -1) {
-      printErr(__FILE__, __LINE__, "rmdir failed", 1, errno);
+      printErr("rmdir failed: errno: %d", errno);
     }
     free(pid_dir);
     return -1;
@@ -374,7 +369,7 @@ static void cpuTimeLimiterCleanup(void *arg) {
   CpuTimeLimiterCleanupPayload *ctlcp = (CpuTimeLimiterCleanupPayload *)arg;
   if (ctlcp -> fd != -1) {
     if (close(ctlcp -> fd) == -1) {
-      printErr(__FILE__, __LINE__, "close failed", 1, errno);
+      printErr("close failed: errno: %d", errno);
     }
   }
   free(ctlcp -> ctlp -> pid_dir);
@@ -411,20 +406,16 @@ static void *cpuTimeLimiter(void *arg) {
   pthread_cleanup_push(cpuTimeLimiterCleanup, ctlcp);
 
   if (fd == -1) {
-    printErr(__FILE__, __LINE__, "open failed", 1, errno);
+    printErr("open failed: errno: %d", errno);
     *(ctlp -> exceeded) = FATAL_ERROR_EXCEED;
 
     ctlp -> tp -> skip = malloc(sizeof(pthread_t));
     *(ctlp -> tp -> skip) = pthread_self();
-    #ifdef SB_VERBOSE
-    printf("terminate called - cpuTimeLimiter 1\n");
-    #endif
+    printDebug("terminate called - cpuTimeLimiter 2");
     if (terminate(ctlp -> tp)== -1) {
-      printErr(__FILE__, __LINE__, "terminate failed", 0, 0);
+      printErr("terminate failed");
     }
-    #ifdef SB_VERBOSE
-    printf("terminate returned - cpuTimeLimiter 1\n");
-    #endif
+    printDebug("terminate returned - cpuTimeLimiter 2");
 
     pthread_exit(NULL);
   }
@@ -438,16 +429,11 @@ static void *cpuTimeLimiter(void *arg) {
 
   ctlp -> tp -> skip = malloc(sizeof(pthread_t));
   *(ctlp -> tp -> skip) = pthread_self();
-  #ifdef SB_VERBOSE
-  printf("terminate called - cpuTimeLimiter 2\n");
-  #endif
+  printDebug("terminate called - cpuTimeLimiter 2");
   if (terminate(ctlp -> tp) == -1) {
-    printErr(__FILE__, __LINE__, "terminate failed", 0, 0);
+    printErr("terminate failed");
   }
-  #ifdef SB_VERBOSE
-  printf("terminate returned - cpuTimeLimiter 2\n");
-  #endif
-
+  printDebug("terminate returned - cpuTimeLimiter 2");
   pthread_cleanup_pop(0);
   pthread_exit(NULL);
 }
@@ -472,7 +458,7 @@ static int setCpuTimeLimit(
 
   char *pid_dir;
   if ((pid_dir = createPidDir(cpuacct_cg, pid)) == NULL) {
-    printErr(__FILE__, __LINE__, "createPidDir failed", 0, 0);
+    printErr("createPidDir failed");
     free(pid_dir);
     return -1;
   }
@@ -499,7 +485,7 @@ static void numTasksListenerCleanup(void *arg) {
   NumTasksListenerCleanupPayload *ntlcp = (NumTasksListenerCleanupPayload *)arg;
   if (ntlcp -> fd != -1) {
     if (close(ntlcp -> fd) == -1) {
-      printErr(__FILE__, __LINE__, "close failed", 1, errno);
+      printErr("close failed: errno: %d", errno);
     }
   }
   free(ntlcp -> ntlp -> pid_dir);
@@ -536,21 +522,17 @@ static void *numTasksListener(void *arg) {
   pthread_cleanup_push(numTasksListenerCleanup, ntlcp);
 
   if (fd == -1) {
-    printErr(__FILE__, __LINE__, "open failed", 1, errno);
+    printErr("open failed: errno: %d", errno);
 
     *(ntlp -> exceeded) = FATAL_ERROR_EXCEED;
 
     ntlp -> tp -> skip = malloc(sizeof(pthread_t));
     *(ntlp -> tp -> skip) = pthread_self();
-    #ifdef SB_VERBOSE
-    printf("terminate called - numTasksListener 1\n");
-    #endif
+    printDebug("terminate called - numTasksListener 1");
     if (terminate(ntlp -> tp) == -1) {
-      printErr(__FILE__, __LINE__, "terminate failed", 0, 0);
+      printErr("terminate failed");
     }
-    #ifdef SB_VERBOSE
-    printf("terminate returned - numTasksListener 1\n");
-    #endif
+    printDebug("terminate returned - numTasksListener 1");
 
     pthread_exit(NULL);
   }
@@ -568,7 +550,7 @@ static void *numTasksListener(void *arg) {
   printf("terminate called - numTasksListener 2\n");
   #endif
   if (terminate(ntlp -> tp) == -1) {
-    printErr(__FILE__, __LINE__, "terminate failed", 0, 0);
+    printErr("terminate failed");
   }
   #ifdef SB_VERBOSE
   printf("terminate returned - numTasksListener 2\n");
@@ -598,16 +580,16 @@ static int setNumTasksLimit(
 
   char *pid_dir;
   if ((pid_dir = createPidDir(pids_cg, pid)) == NULL) {
-    printErr(__FILE__, __LINE__, "createPidDir failed", 0, 0);
+    printErr("createPidDir failed");
     free(pid_dir);
     return -1;
   }
 
   // Set the limit
   if (writeToFile(pid_dir, "pids.max", num_tasks) == -1) {
-    printErr(__FILE__, __LINE__, "writeToFile failed", 0, 0);
+    printErr("writeToFile failed");
     if (rmdir(pid_dir) == -1) {
-      printErr(__FILE__, __LINE__, "rmdir failed", 1, errno);
+      printErr("rmdir failed: errno: %d", errno);
     }
     return -1;
   }
@@ -664,34 +646,34 @@ int setResourceLimits(
   if (setMemLimit(
     pid, res_limits -> mem, cg_locs -> memory, exceeded,
     &threads[0], tp) == -1) {
-    printErr(__FILE__, __LINE__, "setMemLimit failed", 0, 0);
+    printErr("setMemLimit failed");
     return -1;
   }
 
   if (setCpuTimeLimit(
     pid, res_limits -> cpu_time, cg_locs -> cpuacct, exceeded,
     &threads[1], tp) == -1) {
-    printErr(__FILE__, __LINE__, "setCpuTimeLimit failed", 0, 0);
+    printErr("setCpuTimeLimit failed");
     return -1;
   }
 
   if (setNumTasksLimit(
     pid, res_limits -> num_tasks, cg_locs -> pids, exceeded,
     &threads[2], tp) == -1) {
-    printErr(__FILE__, __LINE__, "setNumTasksLimit failed", 0, 0);
+    printErr("setNumTasksLimit failed");
     return -1;
   }
 
   if (addToTasksFile(cg_locs -> memory, pid) == -1) {
-    printErr(__FILE__, __LINE__, "addToTasksFile failed", 0, 0);
+    printErr("addToTasksFile failed");
     return -1;
   }
   if (addToTasksFile(cg_locs -> cpuacct, pid) == -1) {
-    printErr(__FILE__, __LINE__, "addToTasksFile failed", 0, 0);
+    printErr("addToTasksFile failed");
     return -1;
   }
   if (addToTasksFile(cg_locs -> pids, pid) == -1) {
-    printErr(__FILE__, __LINE__, "addToTasksFile failed", 0, 0);
+    printErr("addToTasksFile failed");
     return -1;
   }
   return 0;
