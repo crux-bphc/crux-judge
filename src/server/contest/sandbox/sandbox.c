@@ -13,6 +13,7 @@
 #include <sys/eventfd.h> // eventfd()
 #include <stdint.h>
 #include <seccomp.h>
+#include <semaphore.h>
 
 #include "logger.h"
 #include "syscall_manager.h"
@@ -21,7 +22,6 @@
 #include "terminate.h"
 
 #define EXIT_CHILD_FAILURE 1
-#define SB_VERBOSE
 
 typedef struct ChildPayload {
   const char *exect_path;
@@ -30,8 +30,6 @@ typedef struct ChildPayload {
   const char *output_file;
   const char *whitelist;
   scmp_filter_ctx *ctx;
-  int notify_c;
-  int notify_p;
   uid_t uid;
   gid_t gid;
 } ChildPayload;
@@ -69,24 +67,25 @@ static int childFunc(void *arg) {
 
   // Notify parent to set resource limits and start accounting time, set
   // memory limits etc.
-  uint64_t u = 1;
   // Notifies parent which then sets resource limits
-  if (write(cp -> notify_p, &u, sizeof(uint64_t)) == -1) {
-    printErr("write failed: errno: %d", errno);
+  sem_t *notify_p = sem_open("notify_p", 0);
+  if (sem_post(notify_p) == -1) {
+    printErr("sem_post failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
-  // blocks until resource limits are set in the parent and the parent
+  // wait until resource limits are set in the parent and the parent
   // notifies
-  if (read(cp -> notify_c, &u, sizeof(uint64_t)) == -1) {
-    printErr("read failed: errno: %d", errno);
+  sem_t *notify_c = sem_open("notify_c", 0);
+  if (sem_wait(notify_c) == -1) {
+    printErr("sem_wait failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
-  if (close(cp -> notify_c) == -1) {
-    printErr("close failed: errno: %d", errno);
+  if (sem_destroy(notify_p) == -1) {
+    printErr("sem_destroy failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
-  if (close(cp -> notify_p) == -1) {
-    printErr("close failed: errno: %d", errno);
+  if (sem_destroy(notify_c) == -1) {
+    printErr("sem_destroy failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
 
@@ -125,6 +124,7 @@ static int childFunc(void *arg) {
   // System calls not in whitelist follow action that was specified in the
   // call to 'seccomp_init'
   if (installSysCallBlocker(cp -> ctx, whitelist_fd) == -1) {
+    printErr("installSysCallBlocker failed");
     return EXIT_CHILD_FAILURE;
   }
 
@@ -135,16 +135,18 @@ static int childFunc(void *arg) {
 }
 
 static int sandboxExecFailCleanup(
-  int notify_p, int notify_c, char *child_stack) {
+  sem_t *notify_p, sem_t *notify_c, char *child_stack,
+  scmp_filter_ctx *ctx) {
 
   free(child_stack);
+  free(ctx);
   int ret = 0;
-  if (close(notify_p) == -1) {
-    printErr("close failed: errno: %d", errno);
+  if (sem_destroy(notify_p) == -1) {
+    printErr("sem_destroy failed: errno: %d", errno);
     ret = -1;
   }
-  if (close(notify_c) == -1) {
-    printErr("close failed: errno: %d", errno);
+  if (sem_destroy(notify_c) == -1) {
+    printErr("sem_destroy failed: errno: %d", errno);
     ret = -1;
   }
   return ret;
@@ -165,10 +167,9 @@ int sandboxExec(
   const CgroupLocs *cg_locs, const ResLimits *res_lims,
   const char *whitelist, uid_t uid, gid_t gid) {
 
-  int notify_p = eventfd(0, 0);
-  int notify_c = eventfd(0, 0);
-
-  scmp_filter_ctx ctx;
+  sem_t *notify_p = sem_open("notify_p", O_CREAT, O_RDWR, 0);
+  sem_t *notify_c = sem_open("notify_c", O_CREAT, O_RDWR, 0);
+  scmp_filter_ctx *ctx = malloc(sizeof(scmp_filter_ctx));
 
   // ------------------ clone ------------------
   // TODO: what should child_stack_size be set to,
@@ -185,9 +186,7 @@ int sandboxExec(
   cp.input_file = input_file;
   cp.output_file = output_file;
   cp.whitelist = whitelist;
-  cp.ctx = &ctx;
-  cp.notify_p = notify_p;
-  cp.notify_c = notify_c;
+  cp.ctx = ctx;
   cp.uid = uid;
   cp.gid = gid;
 
@@ -198,25 +197,25 @@ int sandboxExec(
     &cp);
   if (pid == -1) {
     printErr("clone failed: errno: %d", errno);
-    if (sandboxExecFailCleanup(notify_p, notify_c, child_stack) == -1) {
+    if (sandboxExecFailCleanup(notify_p, notify_c, child_stack, ctx) == -1) {
       printErr("sandboxExecFailCleanup failed: errno: %d", errno);
     }
     return SB_FAILURE;
   }
 
   // ------------------ set resource limits ------------------
-  uint64_t u;
-  // blocks until child notifies
-  if (read(notify_p, &u, sizeof(u)) == -1) {
-    printErr("read failed: errno: %d", errno);
+  // wait until child notifies
+  if (sem_wait(notify_p) == -1) {
+    printErr("sem_wait failed: errno: %d", errno);
     if (kill(pid, SIGTERM) == -1) {
       printErr("kill failed: errno: %d", errno);
     }
-    if (sandboxExecFailCleanup(notify_p, notify_c, child_stack) == -1) {
+    if (sandboxExecFailCleanup(notify_p, notify_c, child_stack, ctx) == -1) {
       printErr("sandboxExecFailCleanup failed: errno: %d", errno);
     }
     return SB_FAILURE;
   }
+
   int exceeded = NO_EXCEED;
   TerminatePayload *tp;
   if (setResourceLimits(
@@ -227,34 +226,28 @@ int sandboxExec(
       printErr("kill failed: errno: %d", errno);
     }
 
-    if (sandboxExecFailCleanup(notify_p, notify_c, child_stack) == -1) {
+    if (sandboxExecFailCleanup(notify_p, notify_c, child_stack, ctx) == -1) {
       printErr("sandboxExecFailCleanup failed: errno: %d", errno);
     }
     return SB_FAILURE;
   }
-  u = 1;
+
   // notify child that resource limits are set
-  if (write(notify_c, &u, sizeof(u)) == -1) {
-    printErr("write failed: errno: %d", errno);
+  if (sem_post(notify_c) == -1) {
+    printErr("sem_post failed: errno: %d", errno);
 
     if (kill(pid, SIGTERM) == -1) {
       printErr("kill failed: errno: %d", errno);
     }
 
     if (removePidDirs(cg_locs, pid) == -1) {
-      printErr("kill failed: errno: %d", errno);
+      printErr("removePidDirs failed: errno: %d", errno);
     }
 
-    if (sandboxExecFailCleanup(notify_p, notify_c, child_stack) == -1) {
+    if (sandboxExecFailCleanup(notify_p, notify_c, child_stack, ctx) == -1) {
       printErr("sandboxExecFailCleanup failed: errno: %d", errno);
     }
     return SB_FAILURE;
-  }
-  if (close(notify_p) == -1) {
-    printErr("close failed: errno: %d", errno);
-  }
-  if (close(notify_c) == -1) {
-    printErr("close failed: errno: %d", errno);
   }
 
   // ------------------ wait for child to terminate ------------------
@@ -263,11 +256,11 @@ int sandboxExec(
 
   tp -> terminated = 1;
 
-  // free resources
   free(child_stack);
-  if (ctx != NULL) {
-    seccomp_release(ctx);
+  if (*ctx != NULL) {
+    seccomp_release(*ctx);
   }
+  free(ctx);
 
   if (tp -> once == 1) {
     // reaching here means 'terminate' was called, hence wait for it to
