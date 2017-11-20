@@ -12,7 +12,7 @@ static int installSysCallBlockerCleanup(
   seccomp_release(*ctx);
   free(buf);
   if (fclose(fp) != 0) {
-    printErr(__FILE__, __LINE__, "fclose failed", 1, errno);
+    printErr("fclose failed: errno: %d", errno);
     return -1;
   }
   return 0;
@@ -22,13 +22,13 @@ int installSysCallBlocker(scmp_filter_ctx *ctx, int whitelist_fd) {
 
   FILE *fp = fdopen(whitelist_fd, "r");
   if (fp == NULL) {
-    printErr(__FILE__, __LINE__, "fopen failed", 1, errno);
+    printErr("fopen failed: errno: %d", errno);
     return -1;
   }
 
   *ctx = seccomp_init(SCMP_ACT_ERRNO(EPERM));
   if (*ctx == NULL) {
-    printErr(__FILE__, __LINE__, "seccomp_init failed", 0, 0);
+    printErr("seccomp_init failed");
     return -1;
   }
 
@@ -39,11 +39,9 @@ int installSysCallBlocker(scmp_filter_ctx *ctx, int whitelist_fd) {
     if ((ret = seccomp_rule_add(
       *ctx, SCMP_ACT_ALLOW,
       seccomp_syscall_resolve_name(def_wl[i]), 0)) < 0) {
-      printErr(__FILE__, __LINE__, "seccomp_rule_add failed", 1, -ret);
+      printErr("seccomp_rule_add failed: return value: %d", -ret);
       if (installSysCallBlockerCleanup(ctx, NULL, fp) == -1) {
-        printErr(
-          __FILE__, __LINE__, "installSysCallBlockerCleanup failed", 0,
-          0);
+        printErr("installSysCallBlockerCleanup failed");
       }
       return -1;
     }
@@ -57,11 +55,9 @@ int installSysCallBlocker(scmp_filter_ctx *ctx, int whitelist_fd) {
     buf[strlen(buf) - 1] = '\0';
     if ((ret = seccomp_rule_add(
       *ctx, SCMP_ACT_ALLOW, seccomp_syscall_resolve_name(buf), 0)) < 0) {
-      printErr(__FILE__, __LINE__, "seccomp_rule_add failed", 1, -ret);
+      printErr("seccomp_rule_add failed: return value: %d", -ret);
       if (installSysCallBlockerCleanup(ctx, buf, fp) == -1) {
-        printErr(
-          __FILE__, __LINE__, "installSysCallBlockerCleanup failed", 0,
-          0);
+        printErr("installSysCallBlockerCleanup failed");
       }
       return -1;
     }
@@ -70,12 +66,12 @@ int installSysCallBlocker(scmp_filter_ctx *ctx, int whitelist_fd) {
   // Free resources
   free(buf);
   if (fclose(fp) != 0) {
-    printErr(__FILE__, __LINE__, "fclose failed", 1, errno);
+    printErr("fclose failed: errno: %d", errno);
   }
 
   // Load the filter
   if ((ret = seccomp_load(*ctx)) < 0) {
-    printErr(__FILE__, __LINE__, "seccomp_load failed", 1, -ret);
+    printErr("seccomp_load failed: return value: %d", -ret);
     return -1;
   }
   return 0;

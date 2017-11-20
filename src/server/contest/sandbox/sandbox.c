@@ -41,29 +41,29 @@ static int childFunc(void *arg) {
   ChildPayload *cp = (ChildPayload *)arg;
   int in = open(cp -> input_file, O_RDONLY);
   if (in == -1) {
-    printErr(__FILE__, __LINE__, "open failed", 1, errno);
+    printErr("open failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   int out = open(cp -> output_file, O_WRONLY | O_CREAT | O_TRUNC);
   if (out == -1) {
-    printErr(__FILE__, __LINE__, "open failed", 1, errno);
+    printErr("open failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   // Redirect stdio of child process
   if (dup2(in, STDIN_FILENO) == -1) {
-    printErr(__FILE__, __LINE__, "dup2 failed", 1, errno);
+    printErr("dup2 failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   if (dup2(out, STDOUT_FILENO) == -1) {
-    printErr(__FILE__, __LINE__, "dup2 failed", 1, errno);
+    printErr("dup2 failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   if (close(in) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   if (close(out) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
 
@@ -72,21 +72,21 @@ static int childFunc(void *arg) {
   uint64_t u = 1;
   // Notifies parent which then sets resource limits
   if (write(cp -> notify_p, &u, sizeof(uint64_t)) == -1) {
-    printErr(__FILE__, __LINE__, "write failed", 1, errno);
+    printErr("write failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   // blocks until resource limits are set in the parent and the parent
   // notifies
   if (read(cp -> notify_c, &u, sizeof(uint64_t)) == -1) {
-    printErr(__FILE__, __LINE__, "read failed", 1, errno);
+    printErr("read failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   if (close(cp -> notify_c) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   if (close(cp -> notify_p) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
 
@@ -96,17 +96,17 @@ static int childFunc(void *arg) {
   // anyway in 'installSysCallBlocker'
   int whitelist_fd = open(cp -> whitelist, O_RDONLY | O_CLOEXEC);
   if (whitelist_fd == -1) {
-    printErr(__FILE__, __LINE__, "open failed", 1, errno);
+    printErr("open failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
 
   // 'chdir', 'chroot' and drop privileges
   if (chdir(cp -> jail_path) == -1) {
-    printErr(__FILE__, __LINE__, "chdir failed", 1, errno);
+    printErr("chdir failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   if (chroot("./") == -1) {
-    printErr(__FILE__, __LINE__, "chroot failed", 1, errno);
+    printErr("chroot failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   // uid and gid persist even after exec and child processes inherit these
@@ -114,11 +114,11 @@ static int childFunc(void *arg) {
   // have this uid and gid
   // First gid must be set and only then uid
   if (setgid(cp -> gid) == -1) {
-    printErr(__FILE__, __LINE__, "setgid failed", 1, errno);
+    printErr("setgid failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
   if (setuid(cp -> uid) == -1) {
-    printErr(__FILE__, __LINE__, "setuid failed", 1, errno);
+    printErr("setuid failed: errno: %d", errno);
     return EXIT_CHILD_FAILURE;
   }
 
@@ -129,7 +129,7 @@ static int childFunc(void *arg) {
   }
 
   if (execl(cp -> exect_path, cp -> exect_path, (char *)NULL) == -1) {
-    printErr(__FILE__, __LINE__, "execl failed", 1, errno);
+    printErr("execl failed: errno: %d", errno);
   }
   return EXIT_CHILD_FAILURE;
 }
@@ -140,11 +140,11 @@ static int sandboxExecFailCleanup(
   free(child_stack);
   int ret = 0;
   if (close(notify_p) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
     ret = -1;
   }
   if (close(notify_c) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
     ret = -1;
   }
   return ret;
@@ -176,7 +176,7 @@ int sandboxExec(
   long int child_stack_size = 1024 * 1024;
   char *child_stack = malloc(child_stack_size);
   if (child_stack == NULL) {
-    printErr( __FILE__, __LINE__, "malloc failed\n", 0, 0);
+    printErr("malloc failed");
     return SB_FAILURE;
   }
   ChildPayload cp;
@@ -197,10 +197,9 @@ int sandboxExec(
     childFunc, child_stack + child_stack_size, CLONE_NEWPID | SIGCHLD,
     &cp);
   if (pid == -1) {
-    printErr(__FILE__, __LINE__, "clone failed", 1, errno);
+    printErr("clone failed: errno: %d", errno);
     if (sandboxExecFailCleanup(notify_p, notify_c, child_stack) == -1) {
-      printErr(
-        __FILE__, __LINE__, "sandboxExecFailCleanup failed", 1, errno);
+      printErr("sandboxExecFailCleanup failed: errno: %d", errno);
     }
     return SB_FAILURE;
   }
@@ -209,13 +208,12 @@ int sandboxExec(
   uint64_t u;
   // blocks until child notifies
   if (read(notify_p, &u, sizeof(u)) == -1) {
-    printErr(__FILE__, __LINE__, "read failed", 1, errno);
+    printErr("read failed: errno: %d", errno);
     if (kill(pid, SIGTERM) == -1) {
-      printErr(__FILE__, __LINE__, "kill failed", 1, errno);
+      printErr("kill failed: errno: %d", errno);
     }
     if (sandboxExecFailCleanup(notify_p, notify_c, child_stack) == -1) {
-      printErr(
-        __FILE__, __LINE__, "sandboxExecFailCleanup failed", 1, errno);
+      printErr("sandboxExecFailCleanup failed: errno: %d", errno);
     }
     return SB_FAILURE;
   }
@@ -223,42 +221,40 @@ int sandboxExec(
   TerminatePayload *tp;
   if (setResourceLimits(
     pid, res_lims, cg_locs, &exceeded, &tp) == -1) {
-    printErr(__FILE__, __LINE__, "setResourceLimits failed", 0, 0);
+    printErr("setResourceLimits failed");
 
     if (kill(pid, SIGTERM) == -1) {
-      printErr(__FILE__, __LINE__, "kill failed", 1, errno);
+      printErr("kill failed: errno: %d", errno);
     }
 
     if (sandboxExecFailCleanup(notify_p, notify_c, child_stack) == -1) {
-      printErr(
-        __FILE__, __LINE__, "sandboxExecFailCleanup failed", 1, errno);
+      printErr("sandboxExecFailCleanup failed: errno: %d", errno);
     }
     return SB_FAILURE;
   }
   u = 1;
   // notify child that resource limits are set
   if (write(notify_c, &u, sizeof(u)) == -1) {
-    printErr(__FILE__, __LINE__, "write failed", 1, errno);
+    printErr("write failed: errno: %d", errno);
 
     if (kill(pid, SIGTERM) == -1) {
-      printErr(__FILE__, __LINE__, "kill failed", 1, errno);
+      printErr("kill failed: errno: %d", errno);
     }
 
     if (removePidDirs(cg_locs, pid) == -1) {
-      printErr(__FILE__, __LINE__, "kill failed", 1, errno);
+      printErr("kill failed: errno: %d", errno);
     }
 
     if (sandboxExecFailCleanup(notify_p, notify_c, child_stack) == -1) {
-      printErr(
-        __FILE__, __LINE__, "sandboxExecFailCleanup failed", 1, errno);
+      printErr("sandboxExecFailCleanup failed: errno: %d", errno);
     }
     return SB_FAILURE;
   }
   if (close(notify_p) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
   }
   if (close(notify_c) == -1) {
-    printErr(__FILE__, __LINE__, "close failed", 1, errno);
+    printErr("close failed: errno: %d", errno);
   }
 
   // ------------------ wait for child to terminate ------------------
@@ -281,66 +277,49 @@ int sandboxExec(
     // need to cancel the threads
     tp -> skip = NULL;
     if (terminate(tp) == -1) {
-      printErr(__FILE__, __LINE__, "terminate failed", 0, 0);
+      printErr("terminate failed");
     }
   }
   free(tp);
 
-  #ifdef SB_VERBOSE
-  printf("**************** Results *********************\n");
-  #endif
-
+  printResult("Results");
+  printResult("```````");
   if (WIFEXITED(wstatus)) {
-    #ifdef SB_VERBOSE
-    printf("Child exited with exit status: %d\n", WEXITSTATUS(wstatus));
-    #endif
+    printResult("Child exited with exit status: %d", WEXITSTATUS(wstatus));
     if (WEXITSTATUS(wstatus) == EXIT_CHILD_FAILURE) {
-      printErr(__FILE__, __LINE__, "Sandbox failure", 0, 0);
+      printErr("Sandbox failure");
       return SB_FAILURE;
     }
   } else if (WIFSIGNALED(wstatus)) {
-    #ifdef SB_VERBOSE
-    printf("Child terminated with signal: %d\n", WTERMSIG(wstatus));
-    #endif
+    printResult("Child terminated with signal: %d", WTERMSIG(wstatus));
   } else {
-    printErr(__FILE__, __LINE__, "Unexpected: Child neither exited nor signaled",
-      0, 0);
+    printErr("Unexpected: Child neither exited nor signaled");
     return SB_FAILURE;
   }
 
   switch(exceeded) {
     case NO_EXCEED:
       if (WIFSIGNALED(wstatus)) {
-        #ifdef SB_VERBOSE
-        printf("Runtime error\n");
-        #endif
+        printResult("Runtime error");
         return SB_RUNTIME_ERR;
       } else {
-        #ifdef SB_VERBOSE
-        printf("All OK\n");
-        #endif
+        printResult("All OK");
         return SB_OK;
       }
     case FATAL_ERROR_EXCEED:
-      printErr(__FILE__, __LINE__, "Sandbox failure\n", 0, 0);
+      printErr("Sandbox failure");
       return SB_FAILURE;
     case MEM_LIM_EXCEED:
-      #ifdef SB_VERBOSE
-      printf("Memory limit exceeded\n");
-      #endif
+      printResult("Memory limit exceeded");
       return SB_MEM_EXCEED;
     case TIME_LIM_EXCEED:
-      #ifdef SB_VERBOSE
-      printf("Time limit exceeded\n");
-      #endif
+      printResult("Time limit exceeded");
       return SB_TIME_EXCEED;
     case TASK_LIM_EXCEED:
-      #ifdef SB_VERBOSE
-      printf("Task limit exceeded\n");
-      #endif
+      printResult("Task limit exceeded");
       return SB_TASK_EXCEED;
     default:
-      printErr(__FILE__, __LINE__, "Unexpected value for exceeded", 0, 0);
+      printErr("Unexpected value for exceeded");
       return SB_FAILURE;
   }
 }

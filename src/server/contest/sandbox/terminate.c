@@ -28,15 +28,15 @@ int removePidDirs(const CgroupLocs *cg_locs, pid_t pid) {
 
   int ret = 0;
   if (rmdir(memory_cg) == -1) {
-    printErr(__FILE__, __LINE__, "rmdir failed", 1, errno);
+    printErr("rmdir failed: errno: %d", errno);
     ret = -1;
   }
   if (rmdir(cpuacct_cg) == -1) {
-    printErr(__FILE__, __LINE__, "rmdir failed", 1, errno);
+    printErr("rmdir failed: errno: %d", errno);
     ret = -1;
   }
   if (rmdir(pids_cg) == -1) {
-    printErr(__FILE__, __LINE__, "rmdir failed", 1, errno);
+    printErr("rmdir failed: errno: %d", errno);
     ret = -1;
   }
 
@@ -56,7 +56,7 @@ int terminate(TerminatePayload *tp) {
   if (!(tp -> terminated)) {
     // TODO: handle corner case of killing init in PID NS
     if (kill(tp -> pid, SIGKILL) == -1) {
-      printErr(__FILE__, __LINE__, "kill failed", 1, errno);
+      printErr("kill failed: errno: %d", errno);
       ret = -1;
     }
 
@@ -80,7 +80,7 @@ int terminate(TerminatePayload *tp) {
   }
 
   if (removePidDirs(tp -> cg_locs, tp -> pid) == -1) {
-    printErr(__FILE__, __LINE__, "removePidDirs failed", 1, errno);
+    printErr("removePidDirs failed: errno: %d", errno);
     ret = -1;
   }
   tp -> done = 1;
