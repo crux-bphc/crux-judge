@@ -11,20 +11,23 @@
 #include <unistd.h> // close(), write()
 #include <pthread.h>
 #include <time.h> // nanosleep()
+#include <semaphore.h>
 
 #include "logger.h"
 #include "resource_limits.h"
 #include "terminate.h"
 
 #define TIME_LIM_POLL_INTERVAL 100 // nanoseconds
-#define NUM_TASKS_LIM_POLL_INTERVAL 10 // nanoseconds
+#define NUM_TASKS_LIM_POLL_INTERVAL 100 // nanoseconds
 
 typedef struct MemListenerPayload {
   int oomefd;
   int mocfd;
   int *exceeded;
   char *pid_dir;
-  TerminatePayload *tp;
+  pid_t pid;
+  const CgroupLocs *cg_locs;
+  pthread_mutex_t *term_child_mutex;
 } MemListenerPayload;
 
 typedef struct MemListenerCleanupPayload {
@@ -35,7 +38,9 @@ typedef struct CpuTimeLimiterPayload {
   int *exceeded;
   const char *cpu_time;
   char *pid_dir;
-  TerminatePayload *tp;
+  pid_t pid;
+  const CgroupLocs *cg_locs;
+  pthread_mutex_t *term_child_mutex;
 } CpuTimeLimiterPayload;
 
 typedef struct CpuTimeLimiterCleanupPayload {
@@ -46,7 +51,9 @@ typedef struct CpuTimeLimiterCleanupPayload {
 typedef struct NumTasksListenerPayload {
   int *exceeded;
   char *pid_dir;
-  TerminatePayload *tp;
+  pid_t pid;
+  const CgroupLocs *cg_locs;
+  pthread_mutex_t *term_child_mutex;
 } NumTasksListenerPayload;
 
 typedef struct NumTasksListenerCleanupPayload {
@@ -56,19 +63,6 @@ typedef struct NumTasksListenerCleanupPayload {
 } NumTasksListenerCleanupPayload;
 
 // ------------------------- Helper Functions - Begin -----------------------
-
-/*
-  Returns a pointer to an NTCS |cg|/|pid|.
-
-  Resource residue:
-    1 char malloc - 'pid_dir'
-*/
-static char *getPidDir(const char *cg, pid_t pid) {
-  char *pid_dir = malloc(
-    sizeof(char) * (strlen(cg) + (int)ceil(log10(pid)) + 2));
-  sprintf(pid_dir, "%s/%d", cg, pid);
-  return pid_dir;
-}
 
 /*
   Creates the directory |cg|/|pid| and returns a pointer to the NTCS
@@ -202,6 +196,12 @@ static int pollFileContent(
   }
 }
 
+static void endlessWait() {
+  while (1) {
+    sleep(100);
+  }
+}
+
 // ------------------------- Helper Functions - End -----------------------
 
 // -------------------------- mem - begin -----------------------------------
@@ -243,26 +243,35 @@ static void *memListener(void *arg) {
   pthread_cleanup_push(memListenerCleanup, cpl);
 
   uint64_t u;
-  ssize_t ret = read(mlp -> oomefd, &u, sizeof(uint64_t));
-  if (ret == -1) {
-    printErr("read failed: errno: %d", errno);
-    *(mlp -> exceeded) = FATAL_ERROR_EXCEED;
-  } else if (ret != sizeof(uint64_t)) {
-    printErr("Unexpected return value from read: errno: %d", errno);
-    *(mlp -> exceeded) = FATAL_ERROR_EXCEED;
-  } else {
-    *(mlp -> exceeded) = MEM_LIM_EXCEED;
-  }
-  mlp -> tp -> skip = malloc(sizeof(pthread_t));
-  *(mlp -> tp -> skip) = pthread_self();
-  printDebug("terminate called - memListener");
-  if (terminate(mlp -> tp) == -1) {
-    printErr("terminate failed");
-  }
-  printDebug("terminate returned - memListener");
+  ssize_t read_ret = read(mlp -> oomefd, &u, sizeof(uint64_t));
 
-  pthread_cleanup_pop(0);
-  pthread_exit(NULL);
+  int trylock_ret = pthread_mutex_trylock(mlp -> term_child_mutex);
+  if (trylock_ret == 0) {
+    // lock obtained
+    if (read_ret == -1) {
+      printErr("read failed: errno: %d", errno);
+      *(mlp -> exceeded) = FATAL_ERROR_EXCEED;
+    } else if (read_ret != sizeof(uint64_t)) {
+      printErr("Unexpected return value from read: errno: %d", errno);
+      *(mlp -> exceeded) = FATAL_ERROR_EXCEED;
+    } else {
+      *(mlp -> exceeded) = MEM_LIM_EXCEED;
+    }
+
+    printDebug("terminate called - memListener");
+    if (terminatePid(mlp -> cg_locs, mlp -> pid) == -1) {
+      printErr("terminatePid failed");
+    }
+    printDebug("terminate returned - memListener");
+  } else if(trylock_ret == EBUSY) {
+    // some other thread has the lock
+  } else {
+    // error
+    printErr("pthread_mutex_trylock failed: errno: %d", errno);
+  }
+  endlessWait();
+  pthread_cleanup_pop(1);
+  return NULL;
 }
 
 /*
@@ -282,9 +291,10 @@ static void *memListener(void *arg) {
     1 thread created
 */
 static int setMemLimit(
-  pid_t pid, const char *mem, const char *memory_cg, int *exceeded,
-  pthread_t *thread, TerminatePayload *tp) {
+  pid_t pid, const char *mem, const CgroupLocs *cg_locs, int *exceeded,
+  pthread_mutex_t *term_child_mutex, pthread_t *thread) {
 
+  const char *memory_cg = cg_locs -> memory;
   char *pid_dir;
   if ((pid_dir = createPidDir(memory_cg, pid)) == NULL) {
     printErr("createPidDir failed");
@@ -350,7 +360,9 @@ static int setMemLimit(
   mlp -> mocfd = mocfd;
   mlp -> exceeded = exceeded;
   mlp -> pid_dir = pid_dir;
-  mlp -> tp = tp;
+  mlp -> pid = pid;
+  mlp -> cg_locs = cg_locs;
+  mlp -> term_child_mutex = term_child_mutex;
   pthread_create(thread, NULL, memListener, mlp);
   return 0;
 }
@@ -406,36 +418,49 @@ static void *cpuTimeLimiter(void *arg) {
   pthread_cleanup_push(cpuTimeLimiterCleanup, ctlcp);
 
   if (fd == -1) {
-    printErr("open failed: errno: %d", errno);
-    *(ctlp -> exceeded) = FATAL_ERROR_EXCEED;
 
-    ctlp -> tp -> skip = malloc(sizeof(pthread_t));
-    *(ctlp -> tp -> skip) = pthread_self();
-    printDebug("terminate called - cpuTimeLimiter 2");
-    if (terminate(ctlp -> tp)== -1) {
-      printErr("terminate failed");
+    int trylock_ret = pthread_mutex_trylock(ctlp -> term_child_mutex);
+    if (trylock_ret == 0) {
+
+      *(ctlp -> exceeded) = FATAL_ERROR_EXCEED;
+
+      printDebug("terminate called - cpuTimeLimiter 1");
+      if (terminatePid(ctlp -> cg_locs, ctlp -> pid)== -1) {
+        printErr("terminatePid failed");
+      }
+      printDebug("terminate returned - cpuTimeLimiter 1");
+    } else if (trylock_ret == EBUSY) {
+      // some other thread has the lock
+    } else {
+      // error
+      printErr("pthread_mutex_trylock failed: errno: %d", errno);
     }
-    printDebug("terminate returned - cpuTimeLimiter 2");
-
-    pthread_exit(NULL);
+    endlessWait();
   }
 
   // Blocks until time limit exceeds
-  if (pollFileContent(fd, ctlp -> cpu_time, TIME_LIM_POLL_INTERVAL, 1) == -1) {
-    *(ctlp -> exceeded) = FATAL_ERROR_EXCEED;
+  int poll_ret = pollFileContent(fd, ctlp -> cpu_time, TIME_LIM_POLL_INTERVAL, 1);
+  int trylock_ret = pthread_mutex_trylock(ctlp -> term_child_mutex);
+  if (trylock_ret == 0) {
+    if (poll_ret == -1) {
+      *(ctlp -> exceeded) = FATAL_ERROR_EXCEED;
+    } else {
+      *(ctlp -> exceeded) = TIME_LIM_EXCEED;
+    }
+    printDebug("terminate called - cpuTimeLimiter 2");
+    if (terminatePid(ctlp -> cg_locs, ctlp -> pid) == -1) {
+      printErr("terminatePid failed");
+    }
+    printDebug("terminate returned - cpuTimeLimiter 2");
+  } else if (trylock_ret == EBUSY) {
+    // some other thread has the lock
   } else {
-    *(ctlp -> exceeded) = TIME_LIM_EXCEED;
+    // error
+    printErr("pthread_mutex_trylock failed: errno: %d", errno);
   }
-
-  ctlp -> tp -> skip = malloc(sizeof(pthread_t));
-  *(ctlp -> tp -> skip) = pthread_self();
-  printDebug("terminate called - cpuTimeLimiter 2");
-  if (terminate(ctlp -> tp) == -1) {
-    printErr("terminate failed");
-  }
-  printDebug("terminate returned - cpuTimeLimiter 2");
-  pthread_cleanup_pop(0);
-  pthread_exit(NULL);
+  endlessWait();
+  pthread_cleanup_pop(1);
+  return NULL;
 }
 
 /*
@@ -453,9 +478,10 @@ static void *cpuTimeLimiter(void *arg) {
     1 thread
 */
 static int setCpuTimeLimit(
-  pid_t pid, const char *cpu_time, const char *cpuacct_cg, int *exceeded,
-  pthread_t *thread, TerminatePayload *tp) {
+  pid_t pid, const char *cpu_time, const CgroupLocs *cg_locs, int *exceeded,
+  pthread_mutex_t *term_child_mutex, pthread_t *thread) {
 
+  const char *cpuacct_cg = cg_locs -> cpuacct;
   char *pid_dir;
   if ((pid_dir = createPidDir(cpuacct_cg, pid)) == NULL) {
     printErr("createPidDir failed");
@@ -467,7 +493,9 @@ static int setCpuTimeLimit(
   ctlp -> exceeded = exceeded;
   ctlp -> cpu_time = cpu_time;
   ctlp -> pid_dir = pid_dir;
-  ctlp -> tp = tp;
+  ctlp -> pid = pid;
+  ctlp -> cg_locs = cg_locs;
+  ctlp -> term_child_mutex = term_child_mutex;
   pthread_create(thread, NULL, cpuTimeLimiter, ctlp);
   return 0;
 }
@@ -523,41 +551,56 @@ static void *numTasksListener(void *arg) {
 
   if (fd == -1) {
     printErr("open failed: errno: %d", errno);
-
-    *(ntlp -> exceeded) = FATAL_ERROR_EXCEED;
-
-    ntlp -> tp -> skip = malloc(sizeof(pthread_t));
-    *(ntlp -> tp -> skip) = pthread_self();
-    printDebug("terminate called - numTasksListener 1");
-    if (terminate(ntlp -> tp) == -1) {
-      printErr("terminate failed");
+    if (errno == ENOENT) {
+      // Kernel version doesn't support 'pids.events'. The sandboxed
+      // executable will not be terminated upon exceeding the number of pids
+      // limit, but any calls to fork()/clone() after hitting the limit will
+      // fail.
+      endlessWait();
     }
-    printDebug("terminate returned - numTasksListener 1");
 
-    pthread_exit(NULL);
+    int trylock_ret = pthread_mutex_trylock(ntlp -> term_child_mutex);
+    if (trylock_ret == 0) {
+      *(ntlp -> exceeded) = FATAL_ERROR_EXCEED;
+      printDebug("terminate called - numTasksListener 1");
+      if (terminatePid(ntlp -> cg_locs, ntlp -> pid) == -1) {
+        printErr("terminatePid failed");
+      }
+      printDebug("terminate returned - numTasksListener 1");
+    } else if (trylock_ret == EBUSY) {
+      // some other thread has the lock
+    } else {
+      // error
+      printErr("pthread_mutex_trylock failed: errno: %d", errno);
+    }
+    endlessWait();
   }
 
   // Blocks until num tasks exceeds according to pids.events file
-  if (pollFileContent(fd, "max 0", NUM_TASKS_LIM_POLL_INTERVAL, 2) == -1) {
-    *(ntlp -> exceeded) = FATAL_ERROR_EXCEED;
+  int poll_ret = pollFileContent(fd, "max 0", NUM_TASKS_LIM_POLL_INTERVAL, 2);
+  int trylock_ret = pthread_mutex_trylock(ntlp -> term_child_mutex);
+  if (trylock_ret == 0) {
+    if (poll_ret == -1) {
+      *(ntlp -> exceeded) = FATAL_ERROR_EXCEED;
+    } else {
+      *(ntlp -> exceeded) = TASK_LIM_EXCEED;
+    }
+
+    printDebug("terminate called - numTasksListener 2");
+    if (terminatePid(ntlp -> cg_locs, ntlp -> pid) == -1) {
+      printErr("terminatePid failed");
+    }
+    printDebug("terminate returned - numTasksListener 2");
+  } else if (trylock_ret == EBUSY) {
+    // some other thread has the lock
   } else {
-    *(ntlp -> exceeded) = TASK_LIM_EXCEED;
+    // error
+    printErr("pthread_mutex_trylock failed: errno: %d", errno);
   }
 
-  ntlp -> tp -> skip = malloc(sizeof(pthread_t));
-  *(ntlp -> tp -> skip) = pthread_self();
-  #ifdef SB_VERBOSE
-  printf("terminate called - numTasksListener 2\n");
-  #endif
-  if (terminate(ntlp -> tp) == -1) {
-    printErr("terminate failed");
-  }
-  #ifdef SB_VERBOSE
-  printf("terminate returned - numTasksListener 2\n");
-  #endif
-
-  pthread_cleanup_pop(0);
-  pthread_exit(NULL);
+  endlessWait();
+  pthread_cleanup_pop(1);
+  return NULL;
 }
 
 /*
@@ -575,9 +618,10 @@ static void *numTasksListener(void *arg) {
     1 thread
 */
 static int setNumTasksLimit(
-  pid_t pid, const char *num_tasks, const char *pids_cg, int *exceeded,
-  pthread_t *thread, TerminatePayload *tp) {
+  pid_t pid, const char *num_tasks, const CgroupLocs *cg_locs, int *exceeded,
+  pthread_mutex_t *term_child_mutex, pthread_t *thread) {
 
+  const char *pids_cg = cg_locs -> pids;
   char *pid_dir;
   if ((pid_dir = createPidDir(pids_cg, pid)) == NULL) {
     printErr("createPidDir failed");
@@ -606,7 +650,9 @@ static int setNumTasksLimit(
   NumTasksListenerPayload *ntlp = malloc(sizeof(NumTasksListenerPayload));
   ntlp -> pid_dir = pid_dir;
   ntlp -> exceeded = exceeded;
-  ntlp -> tp = tp;
+  ntlp -> pid = pid;
+  ntlp -> cg_locs = cg_locs;
+  ntlp -> term_child_mutex = term_child_mutex;
   pthread_create(thread, NULL, numTasksListener, ntlp);
   return 0;
 }
@@ -629,37 +675,26 @@ static int setNumTasksLimit(
 */
 int setResourceLimits(
   pid_t pid, const ResLimits *res_limits, const CgroupLocs *cg_locs,
-  int *exceeded, TerminatePayload **pl) {
-
-  TerminatePayload *tp = malloc(sizeof(TerminatePayload));
-  tp -> cg_locs = cg_locs;
-  tp -> pid = pid;
-  tp -> threads_len = 3;
-  tp -> skip = NULL;
-  tp -> terminated = 0;
-  tp -> done = 0;
-  tp -> once = 0;
-  pthread_t *threads = malloc(sizeof(pthread_t) * (tp -> threads_len));
-  tp -> threads = threads;
-  *pl = tp;
+  int *exceeded, pthread_mutex_t *term_child_mutex,
+  pthread_t *watcher_threads, int num_watcher_threads) {
 
   if (setMemLimit(
-    pid, res_limits -> mem, cg_locs -> memory, exceeded,
-    &threads[0], tp) == -1) {
+    pid, res_limits -> mem, cg_locs, exceeded,
+    term_child_mutex, &watcher_threads[0]) == -1) {
     printErr("setMemLimit failed");
     return -1;
   }
 
   if (setCpuTimeLimit(
-    pid, res_limits -> cpu_time, cg_locs -> cpuacct, exceeded,
-    &threads[1], tp) == -1) {
+    pid, res_limits -> cpu_time, cg_locs, exceeded,
+    term_child_mutex, &watcher_threads[1]) == -1) {
     printErr("setCpuTimeLimit failed");
     return -1;
   }
 
   if (setNumTasksLimit(
-    pid, res_limits -> num_tasks, cg_locs -> pids, exceeded,
-    &threads[2], tp) == -1) {
+    pid, res_limits -> num_tasks, cg_locs, exceeded,
+    term_child_mutex, &watcher_threads[2]) == -1) {
     printErr("setNumTasksLimit failed");
     return -1;
   }

@@ -22,6 +22,3 @@ int sandboxExec(
   const char *whitelist, uid_t uid, gid_t gid);
 
 #endif
-/*
-  sudo ./a.out "1M" "1000000000" "1" "/sys/fs/cgroup/memory/test" "/sys/fs/cgroup/cpuacct/test" "/sys/fs/cgroup/pids/test" "temp/jail" "exect" "temp/in" "temp/out" "temp/wl" "1000" "1000"
-*/

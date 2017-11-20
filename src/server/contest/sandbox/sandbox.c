@@ -217,9 +217,12 @@ int sandboxExec(
   }
 
   int exceeded = NO_EXCEED;
-  TerminatePayload *tp;
+  int num_watcher_threads = 3;
+  pthread_t watcher_threads[num_watcher_threads];
+  pthread_mutex_t term_child_mutex = PTHREAD_MUTEX_INITIALIZER;
   if (setResourceLimits(
-    pid, res_lims, cg_locs, &exceeded, &tp) == -1) {
+    pid, res_lims, cg_locs, &exceeded, &term_child_mutex,
+    watcher_threads, num_watcher_threads) == -1) {
     printErr("setResourceLimits failed");
 
     if (kill(pid, SIGTERM) == -1) {
@@ -254,7 +257,23 @@ int sandboxExec(
   int wstatus;
   waitpid(pid, &wstatus, 0);
 
-  tp -> terminated = 1;
+  // Used to handle the case where a limit is found to be exceeded, but
+  // before the sandboxed process is terminated, it itself exits. This
+  // could result in the corresponding watcher thread, trying to terminate
+  // an already terminated process.
+  // The following code tries to lock the mutex so that, the watcher thread
+  // cannot terminate the already terminated process. However, this is not
+  // perfect because the watcher thread could lock the mutex before the
+  // following code does.
+  int trylock_ret = pthread_mutex_trylock(&term_child_mutex);
+  if (trylock_ret == 0) {
+    // lock obtained
+  } else if(trylock_ret == EBUSY) {
+    // some other thread has the lock
+  } else {
+    // error
+    printErr("pthread_mutex_trylock failed: errno: %d", errno);
+  }
 
   free(child_stack);
   if (*ctx != NULL) {
@@ -262,18 +281,11 @@ int sandboxExec(
   }
   free(ctx);
 
-  if (tp -> once == 1) {
-    // reaching here means 'terminate' was called, hence wait for it to
-    // finish
-    while (tp -> done == 0);
-  } else {
-    // need to cancel the threads
-    tp -> skip = NULL;
-    if (terminate(tp) == -1) {
-      printErr("terminate failed");
-    }
+  // cleanup resources used by setResource limit
+  terminateThreads(watcher_threads, num_watcher_threads);
+  if (removePidDirs(cg_locs, pid) == -1) {
+    printErr("removePidDirs failed: errno: %d", errno);
   }
-  free(tp);
 
   printResult("Results");
   printResult("```````");
