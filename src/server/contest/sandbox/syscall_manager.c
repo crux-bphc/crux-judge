@@ -22,7 +22,7 @@ int installSysCallBlocker(scmp_filter_ctx *ctx, int whitelist_fd) {
 
   FILE *fp = fdopen(whitelist_fd, "r");
   if (fp == NULL) {
-    printErr("fopen failed: errno: %d", errno);
+    printErr("fdopen failed: errno: %d", errno);
     return -1;
   }
 

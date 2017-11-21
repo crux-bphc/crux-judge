@@ -4,7 +4,7 @@
 #include <sys/types.h>
 
 // For 'exceeded'
-#define FATAL_ERROR_EXCEED -1
+#define FATAL_ERROR_EXCEED 4
 #define NO_EXCEED 0
 #define MEM_LIM_EXCEED 1
 #define TIME_LIM_EXCEED 2
@@ -33,10 +33,9 @@ typedef struct CgroupLocs {
   // Directory paths should not have trailing forward slash
 } CgroupLocs;
 
-typedef struct TerminatePayload TerminatePayload;
-
 int setResourceLimits(
   pid_t pid, const ResLimits *res_limits, const CgroupLocs *cg_locs,
-  int *exceeded, TerminatePayload **pl);
+  int *exceeded, pthread_mutex_t *terminate_child,
+  pthread_t *watcher_threads, int num_watcher_threads);
 
 #endif
