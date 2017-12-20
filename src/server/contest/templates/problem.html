@@ -35,11 +35,11 @@
                             <li>
                                 <!-- TODO: Use fontawesome instead of images -->
                                 {% if test is 0 %} <img src="/../static/images/right.png" height="15" width="15"> Pass
-                                {% elif test is 1 %} <img src="/../static/images/wrong.png" height="15" width="15"> Compilation Error
+                                {% elif test is 6 %} <img src="/../static/images/wrong.png" height="15" width="15"> Compilation Error
                                 {% elif test is 2 %} <img src="/../static/images/wrong.png" height="15" width="15"> Runtime Error
                                 {% elif test is 3 %} <img src="/../static/images/wrong.png" height="15" width="15"> Memory Limit Exceeded
                                 {% elif test is 4 %} <img src="/../static/images/wrong.png" height="15" width="15"> Time Limit Exceeded
-                                {% elif test is 5 %} <img src="/../static/images/wrong.png" height="15" width="15"> Incorrect Answer
+                                {% elif test is 7 %} <img src="/../static/images/wrong.png" height="15" width="15"> Incorrect Answer
                                 {% endif %}
                             </li>
                         {% endfor %}

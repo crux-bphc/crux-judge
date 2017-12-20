@@ -29,7 +29,7 @@ class Runner():
     def check_all(self):
     # traverses thru all input cases and saves return code for all cases in tests[]
     # Return code : 0=successful;correct answer
-    #               5=wrong answer
+    #               7=wrong answer
     #               else error
         self.tests=[]
         for case in self.input_files:
@@ -44,11 +44,13 @@ class Runner():
         """
             self.tests[] stores return codes of all cases
             0 : correct answer
-            1 : compilation error
+            1 : sandbox failure
             2 : runtime error
             3 : memory limit exceeded
             4 : time limit exceeded
-            5 : incorrect answer
+            5 : sandbox child processes exceeded
+            6 : compilation error
+            7 : incorrect answer
         """
         result = self.execute(self.submission_file,input_file)
         try:
@@ -61,7 +63,7 @@ class Runner():
                 self.tests.append(0)
             else:
                 # incorrect answer
-                self.tests.append(5)
+                self.tests.append(7)
 
         except KeyError:
             # compilation/runtime error
@@ -79,7 +81,8 @@ class Runner():
         # name of the file without extension
         file_name_without_extension = file_name.split('.')[0]
         #executable is stored in /sandbox/jail/executable
-        executable_path = os.getcwd() + "/contest/sandbox/jail/executable"
+        EXECUTABLE_FILE = "executable_" + str(self.submission.id)
+        executable_path = os.getcwd() + "/contest/sandbox/jail/" + EXECUTABLE_FILE
 
         #printing for testing purposes
         # print ("file_path: "+file_path)
@@ -101,7 +104,7 @@ class Runner():
             result = {}
             # print ("\nCompilation Error\n")
             # print(e)
-            result['error']=1
+            result['error']=6
             return result
             # exit(1)
 
@@ -129,18 +132,29 @@ class Runner():
 
     def safe_execution(self,input_file_path):
         """ Uses sandbox to execute compiled executables of submitted C code """
+
         INPUT_FILE = input_file_path
+        OUTPUT_FILE = os.getcwd() + "/contest/sandbox/output_" + str(self.submission.id)
+        EXECUTABLE_FILE = os.getcwd() + "/contest/sandbox/jail/" + "executable_" + str(self.submission.id)
+
         result = {}
 
-        cmd = ["sudo",EXE,MEMORY_LIMIT,TIME_LIMIT,MAX_PIDS,MEMORY_CGROUP,CPUACCT_CGROUP,PIDS_CGROUP,JAIL_DIR,EXECUTABLE_FILE,INPUT_FILE,OUTPUT_FILE,WHITELIST,UID,GID]
+        cmd = ["sudo",EXE,MEMORY_LIMIT,TIME_LIMIT,MAX_PIDS,MEMORY_CGROUP,CPUACCT_CGROUP,PIDS_CGROUP,JAIL_DIR,os.path.basename(EXECUTABLE_FILE),INPUT_FILE,OUTPUT_FILE,WHITELIST,UID,GID]
         # process = subprocess.run(cmd,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         try:
-            subprocess.check_call(cmd,stdout=subprocess.PIPE)
-            output_file = os.getcwd() + '/contest/sandbox/output'
-            output = open(output_file,'r')
+            subprocess.check_call(cmd,stdout=subprocess.PIPE,timeout=2)
+            # timeout = time alloted to sandbox for execution. If exceeded, returns TLE error
+            output = open(OUTPUT_FILE,'r')
             result['output'] = output.read()
         except subprocess.CalledProcessError as e:
             # 2 - runtime error, 3 - memory limit exceeded, 4 - time limit exceeded
             result['error'] = e.returncode
+            print(e.returncode)
+        except subprocess.TimeoutExpired as e:
+            # subprocess timeout
+            result['error'] = 4
+
+        # remove executable and output files created
+        subprocess.run(["rm","-f",OUTPUT_FILE,EXECUTABLE_FILE],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
         return result
