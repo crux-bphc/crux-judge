@@ -90,13 +90,17 @@ ENV/
 
 
 # Submissions Files
-src/server/submissions
+src/server/contest/submissions
 
 # Executable in sandbox
-src/server/contest/sandbox/jail/executable
+src/server/contest/sandbox/jail
 
 # Sandbox output file
 src/server/contest/sandbox/output
 
 # Contest testcases
 src/server/contest/testcases/*
+
+# Student records
+*.csv
+
