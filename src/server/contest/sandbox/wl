@@ -8,3 +8,4 @@ read
 lseek
 exit_group
 write
+nanosleep
