@@ -24,5 +24,6 @@ class Submission(models.Model):
     user = models.ForeignKey(User,verbose_name='submitted-by')
     ip = models.GenericIPAddressField(verbose_name='submitted-by IP',blank=True,null=True)
     local_file = models.CharField(max_length=150,null=True,verbose_name='Original File')
+    testcase_codes = models.CharField(default="[-1]",max_length=100,verbose_name="Testcase Status Code")
     def __str__(self):
         return "{} - {} - {}".format(self.user.username,self.problem.title,self.time)

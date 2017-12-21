@@ -35,6 +35,8 @@ class Runner():
         for case in self.input_files:
             path = self.testcase_dir + '/' + case
             self.check_result(path)
+        self.submission.testcase_codes = str(self.tests)
+        self.submission.save()
 
         # for testing
         print("\n\nTEST CASES RESPONSES : ",end='')
