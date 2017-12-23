@@ -46,6 +46,12 @@ def auth(request):
             # username = User.objects.get(id = user_id).username
             request.session.set_expiry(0) #session expires when browser is closed
             messages.success(request,"Welcome {}".format(user.username))
+            #Change Password after successful login
+            u = User.objects.get(username=username)
+            if not (u.is_superuser or u.is_staff):
+                # TODO: Replace the following password with a randomly generated password
+                u.set_password('replacewitharandomstringlater')
+                u.save()
             return problemList(request)
 
         else:
