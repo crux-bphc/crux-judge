@@ -3,6 +3,7 @@ from django.shortcuts import render
 from .forms import LoginForm,SubmissionForm
 from .models import Problem as contest_problem,Submission
 from django.contrib.auth.models import User
+from contest.models import Profile
 from django.contrib.auth import authenticate,login,logout
 from bank.models import Problem as all_problems
 from time import sleep
@@ -37,21 +38,20 @@ def auth(request):
             username = form["username"].value()
             password = form["password"].value()
 
-        user = authenticate(request,username=username,password=password)
+        # profile = Profile.objects.create(user=request.user, logged_in=False)
 
-        if user is not None and user.is_active:
+        user = authenticate(request,username=username,password=password)
+        # profile = Profile.objects.create(user=user, logged_in=False)
+        print(user.profile.logged_in)
+        if user is not None and user.is_active and user.profile.logged_in==False:
             # login_ successful
             login(request,user)
+            setattr(user.profile,"logged_in",True)
+            print(user.profile.logged_in)
             # user_id = request.session['_auth_user_id']
             # username = User.objects.get(id = user_id).username
             request.session.set_expiry(0) #session expires when browser is closed
             messages.success(request,"Welcome {}".format(user.username))
-            #Change Password after successful login
-            u = User.objects.get(username=username)
-            if not (u.is_superuser or u.is_staff):
-                # TODO: Replace the following password with a randomly generated password
-                u.set_password('replacewitharandomstringlater')
-                u.save()
             return problemList(request)
 
         else:
