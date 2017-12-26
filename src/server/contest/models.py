@@ -18,19 +18,38 @@ class Problem(models.Model):
     def __str__(self):
         return "{} : {}".format(self.problem.problem_id,self.problem.title)
 
+
 class Submission(models.Model):
     id = models.AutoField(primary_key = True)
     problem = models.ForeignKey('bank.problem')
     score = models.DecimalField(default=0,max_digits=5,decimal_places=2)
     time = models.DateTimeField(auto_now_add=True,verbose_name='Submission Time')
     user = models.ForeignKey(User,verbose_name='submitted-by')
-    ip = models.GenericIPAddressField(verbose_name='submitted-by IP',blank=True,null=True)
+    ip = models.GenericIPAddressField(verbose_name='submitted-by (IP)',blank=True,null=True)
     local_file = models.CharField(max_length=150,null=True,verbose_name='Original File')
     testcase_codes = models.CharField(default="[-1]",max_length=100,verbose_name="Testcase Status Code")
     def __str__(self):
         return "{} - {} - {}".format(self.user.username,self.problem.title,self.time)
 
-# Custom User Model
+    def testcase_result_verbose(self):
+
+        def code_to_string(code):
+            # code = int(code.strip())
+            if(code == 0): return "Pass"
+            elif(code == 1): return "SandboxFailure"
+            elif(code == 2): return "RuntimeError"
+            elif(code == 3): return "MemLimExceeded"
+            elif(code == 4): return "TimeLimExceeded"
+            elif(code == 5): return "SandboxChildProcessExceeded"
+            elif(code == 6): return "CompilationErr"
+            elif(code == 7): return "IncorrectAnswer"
+            else: return "default"
+
+        tests = list(map(int,self.testcase_codes.replace(" ","")[1:-1].split(',')))
+        print(tests)
+        return list(map(code_to_string,tests))
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     logged_in = models.BooleanField(default=False)
