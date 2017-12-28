@@ -3,6 +3,7 @@ from django.shortcuts import render
 from .forms import LoginForm,SubmissionForm
 from .models import Problem as contest_problem,Submission
 from django.contrib.auth.models import User
+from contest.models import Profile
 from django.contrib.auth import authenticate,login,logout
 from bank.models import Problem as all_problems
 from time import sleep
@@ -39,9 +40,11 @@ def auth(request):
 
         user = authenticate(request,username=username,password=password)
 
-        if user is not None and user.is_active:
+        if user is not None and user.is_active and user.profile.logged_in==False:
             # login_ successful
             login(request,user)
+            Profile.objects.filter(user_id=user.id).update(logged_in=True)
+            print(user.profile.logged_in)
             # user_id = request.session['_auth_user_id']
             # username = User.objects.get(id = user_id).username
             request.session.set_expiry(0) #session expires when browser is closed
@@ -136,6 +139,7 @@ def upload(request):
 
 def logout_view(request):
     logout(request)
+    Profile.objects.filter(user_id=user.id).update(logged_in=False)
     messages.info(request,"You have been logged out")
     return index(request)
 
