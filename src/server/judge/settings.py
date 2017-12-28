@@ -30,6 +30,8 @@ ALLOWED_HOSTS = ['127.0.0.1','192.168.43.101']
 
 # Application definition
 
+AUTH_PROFILE_MODULE = 'contest.Profile'
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
