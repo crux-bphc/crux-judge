@@ -329,3 +329,10 @@ table td {
 #id_submission_file {
 	padding: 10px;
 }
+#timer {
+	position: absolute;
+	top: 36px;
+	right: 25px;
+	text-align: left;
+	color: white;
+}

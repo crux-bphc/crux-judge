@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Problem, Submission
+from .models import Problem, Submission, Config
 
 class ProblemAdmin(admin.ModelAdmin):
 
@@ -87,3 +87,5 @@ admin.site.site_title = "Crux Judge Admin"
 admin.site.index_title = "Admin - Crux Judge"
 admin.site.register(Problem, ProblemAdmin)
 admin.site.register(Submission, SubmissionAdmin)
+# Improve later
+admin.site.register(Config)
