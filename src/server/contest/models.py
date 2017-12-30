@@ -3,8 +3,9 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.utils import timezone
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.core.exceptions import PermissionDenied
 # Create your models here.
 
 @python_2_unicode_compatible
@@ -49,6 +50,15 @@ class Submission(models.Model):
         print(tests)
         return list(map(code_to_string,tests))
 
+class Config(models.Model):
+    start = models.DateTimeField(verbose_name='Start Time')
+    end = models.DateTimeField(verbose_name='End Time')
+
+# Don't allow more than one config per contest
+@receiver(pre_save,sender=Config)
+def check_config_count(sender, **kwargs):
+    if sender.objects.count() >= 1:
+        raise PermissionDenied
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

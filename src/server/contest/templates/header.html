@@ -38,13 +38,34 @@
                 {% endif %}
             </ul>
         </div>
+        <div id="timer">
 
+        </div>
         {% block body %} {% endblock %}
     </div>
 
+    <script>
+    var end = "{{ end }}"
+    var update_time = function(){
+        var d = new Date();
+        d.setHours(d.getHours() - 5);
+        d.setMinutes(d.getMinutes() - 30);
+        var n = d.getTime();
+        milSec = end-n;
 
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-    </body>
+        var milliseconds = parseInt((milSec%1000)/100)
+        , seconds = parseInt((milSec/1000)%60)
+        , minutes = parseInt((milSec/(1000*60))%60)
+        , hours = parseInt((milSec/(1000*60*60))%24);
+
+        hours = (hours < 10) ? "0" + hours : hours;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+        document.getElementById('timer').innerHTML = "Time Left: " + hours + ":" + minutes + ":" + seconds;
+    };
+    setInterval(update_time,1000);
+    </script>
+</body>
 </html>
 
 <!--
