@@ -8,7 +8,7 @@ class Runner():
     """To compile, execute and evaluate the
     submitted code against saved testcases """
 
-    BASE_TEST_CASES_DIR = os.getcwd() + '/contest/testcases'
+    BASE_TEST_CASES_DIR = os.getcwd() + '/bank/testcases'
     BASE_SUBMISSION_DIR = os.getcwd() + '/contest/submissions'
 
     def __init__(self,submission):

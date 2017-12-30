@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %} Testcases Portal {% endblock %}
+
+{% block content %}
+
+    <h2>TESTCASES PORTAL</h2>
+    <div class="row problem">
+        {% for problem in problems %}
+            <h2><a href="/admin/bank/problem/testcases/{{ problem.problem_id }}">{{ problem.problem_id }}. {{ problem.title }}</a></h2>
+        {% endfor %}
+    </div>
+
+{% endblock %}

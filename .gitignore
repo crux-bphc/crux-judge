@@ -99,7 +99,7 @@ src/server/contest/sandbox/jail
 src/server/contest/sandbox/output
 
 # Contest testcases
-src/server/contest/testcases/*
+src/server/bank/testcases/*
 
 # Student records
 *.csv

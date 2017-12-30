@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %} Testcases - {{problem.problem_id}} {% endblock %}
+
+{% block content %}
+    <h2>TESTCASES</h3>
+    <h3>{{problem.problem_id}}. {{problem.title}} </h3>
+    <div class"testcases">
+
+        <ul>
+            {% for case in no_of_cases %}
+            <li>
+                <a href="/admin/bank/problem/testcases/{{problem.problem_id}}/{{case}}" target="_blank">Testcase {{case|add:"1"}}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <a href="/admin/bank/problem/testcases/{{problem.problem_id}}/add/"><button>Add</button></a>
+    <a href="/admin/bank/problem/testcases/{{problem.problem_id}}/remove/"><button>Remove</button></a>
+{% endblock %}
