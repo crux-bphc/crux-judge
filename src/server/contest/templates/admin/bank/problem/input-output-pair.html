@@ -1,34 +1,34 @@
-<html>
-<head>
-    <title>
-        case
-    </title>
-    <style>
-        .input-output-pair {
-            background-color: #eaeaea;
+{% extends "admin/base_site.html" %}
+{% block title %} Testcase {{case_no}} - {{problem.problem_id}} {% endblock %}
 
-        }
-        .case-frame {
-            background-color: white;
-            border-left: 5px solid #f46842;
-        }
-        .frame {
-            float:left;
-            border:solid black;
-            background-color: #a5a5a5;
-            width: 45%;
-        }
-    </style>
-</head>
-<body>
+{% block breadcrumbs %}
 
-<div class = "input-output-pair">
-    <div class="frame" style="float:left">
-        INPUT: <div class="case-frame"><pre><code>{{input}}</code></pre></div>
+    <div class="breadcrumbs">
+            <a href="/admin/">Home</a> >
+            <a href="/admin/bank/">Bank</a> >
+            <a href="/admin/bank/problem/">Problems</a> >
+            <a href="/admin/bank/problem/testcases">Testcases</a> >
+            <a href="/admin/bank/problem/testcases/{{problem.problem_id}}">{{problem.problem_id}}</a> >
+            <a href="/admin/bank/problem/testcases/{{problem.problem_id}}/{{case_no}}">{{case_no}}</a>
     </div>
-    <div class="frame" style="float:right">
-        OUTPUT: <div class="case-frame"><pre>{{output}}</pre></div>
-    </div>
-</div>
-</body>
-</html>
+
+{% endblock %}
+
+{% block content %}
+
+<b>Input:</b></weak><br>
+
+<textarea readonly rows="10" cols="40" style="background-color:#e0e0e0;border-left: 5px solid #79aec8;">
+{{input}}
+</textarea><p>
+
+<b>Output:</b><br>
+<textarea readonly rows="10" cols="40" style="background-color:#e0e0e0;border-left: 5px solid #79aec8;">
+{{output}}
+</textarea><p>
+
+<a href="/admin/bank/problem/testcases/{{problem.problem_id}}/{{case_no}}/remove/">
+    <button>Delete Testcase</button>
+</a>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "admin/base_site.html" %}
+{% block title %} Add New Testcase - {{problem.problem_id}} {% endblock %}
+
+{% block breadcrumbs %}
+
+    <div class="breadcrumbs">
+            <a href="/admin/">Home</a> >
+            <a href="/admin/bank/">Bank</a> >
+            <a href="/admin/bank/problem/">Problems</a> >
+            <a href="/admin/bank/problem/testcases">Testcases</a> >
+            <a href="/admin/bank/problem/testcases/{{problem.problem_id}}">{{problem.problem_id}}</a> >
+            <a href="/admin/bank/problem/testcases/add/{{problem.problem_id}}/">Add testcase</a>
+    </div>
+
+{% endblock %}
+
+{% block content %}
+
+    <form action="/admin/bank/problem/testcases/add/{{problem.problem_id}}/save/" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if testcase_form.non_field_errors %}
+            <ul>
+                {% for error in testcase_form.non_field_error %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% for field in testcase_form.visible_fields %}
+
+            <strong>{{ field.label_tag }}</strong>
+            {% if field.name != "problem_id" %}<br>{% endif %}
+
+            {% if field.errors %}
+                <ul>
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if field.name == "problem_id" %}
+                    {{problem.problem_id}}. {{ problem.title }}
+            {% else %}
+                {{field}}
+            {% endif %}
+            <p>
+
+        {% endfor %}
+        <input type="submit" value="Save">
+
+    </form>
+
+</div>
+{% endblock %}

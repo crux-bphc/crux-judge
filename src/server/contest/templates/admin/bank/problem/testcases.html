@@ -1,6 +1,17 @@
 {% extends "admin/base_site.html" %}
-
 {% block title %} Testcases - {{problem.problem_id}} {% endblock %}
+
+{% block breadcrumbs %}
+
+    <div class="breadcrumbs">
+            <a href="/admin/">Home</a> >
+            <a href="/admin/bank/">Bank</a> >
+            <a href="/admin/bank/problem/">Problems</a> >
+            <a href="/admin/bank/problem/testcases">Testcases</a> >
+            <a href="/admin/bank/problem/testcases/{{problem.problem_id}}">{{problem.problem_id}}</a>
+    </div>
+
+{% endblock %}
 
 {% block content %}
     <h2>TESTCASES</h3>
@@ -10,12 +21,15 @@
         <ul>
             {% for case in no_of_cases %}
             <li>
-                <a href="/admin/bank/problem/testcases/{{problem.problem_id}}/{{case}}" target="_blank">Testcase {{case|add:"1"}}</a>
+                <a href="/admin/bank/problem/testcases/{{problem.problem_id}}/{{case}}" >Testcase {{case|add:"1"}}</a>
             </li>
+            {% empty %}
+                no testcases
             {% endfor %}
         </ul>
+
     </div>
 
-    <a href="/admin/bank/problem/testcases/{{problem.problem_id}}/add/"><button>Add</button></a>
-    <a href="/admin/bank/problem/testcases/{{problem.problem_id}}/remove/"><button>Remove</button></a>
+    <a href="/admin/bank/problem/testcases/add/{{problem.problem_id}}/"><button>Add</button></a>
+
 {% endblock %}
