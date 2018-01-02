@@ -82,10 +82,26 @@ class SubmissionAdmin(admin.ModelAdmin):
 
     list_per_page = 500
 
+
+class ConfigAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'id',
+        'start',
+        'end',
+    ]
+
+    list_display_links = [
+        'id',
+        'start',
+        'end',
+    ]
+
+
 admin.site.site_header = "Judge Administration Portal"
 admin.site.site_title = "Crux Judge Admin"
 admin.site.index_title = "Admin - Crux Judge"
 admin.site.register(Problem, ProblemAdmin)
 admin.site.register(Submission, SubmissionAdmin)
 # Improve later
-admin.site.register(Config)
+admin.site.register(Config, ConfigAdmin)

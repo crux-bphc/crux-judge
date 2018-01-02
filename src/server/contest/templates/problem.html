@@ -24,7 +24,7 @@
                     {% csrf_token %}
                     {{ submission_form }}
                     <input type="hidden" name="problem_id" value={{problem.problem_id}}><br/>
-                    <input class="btn btn-danger" type="submit" value="Upload and Run" onclick="alert('FILE UPLOADED SUCCESSFULLY');">
+                    <input class="btn btn-danger" type="submit" value="Upload and Run" {% if submission_form.fields.filename %}onclick="alert('FILE UPLOADED SUCCESSFULLY');"{% endif %}>
                 </form>
             </div>
 

@@ -15,16 +15,12 @@ from django.utils import timezone
 from django.contrib import messages
 
 # Create your views here.
-def get_end_time():
-    config = Config.objects.all()
-    for active_config in config:
-        end=active_config.end
-
-    timetuple = end.timetuple()
+def get_time(time_):
+    timetuple = time_.timetuple()
     timestamp = mktime(timetuple)
-    end = timestamp * 1000.0
+    time_ = timestamp * 1000.0
 
-    return end
+    return time_
 
 def index(request):
     # request.session.clear_expired()
@@ -33,10 +29,12 @@ def index(request):
         return problemList(request)
 
     login_form = LoginForm()
-    end = get_end_time()
+    end = get_time(Config.objects.all()[0].end)
+    start = get_time(Config.objects.all()[0].start)
     context = {
         "login_form" : login_form,
-        "end": end
+        "end": end,
+        "start": start,
     }
 
     return render(request,'contest_login.html',context)
@@ -45,6 +43,8 @@ def auth(request):
     """ Checks login information entered by user """
     if request.method == "POST":
 
+        if(timezone.now() < Config.objects.all()[0].start):
+            return HttpResponse("Contest has not started yet.")
         form = LoginForm(request.POST)
         if form.is_valid:
             username = form["username"].value()
@@ -79,13 +79,15 @@ def problem(request,problem_id,submission=None):
         problem = all_problems.objects.get(problem_id=problem_id)
         user = User.objects.get(id=request.session['_auth_user_id'])
         submission_form = SubmissionForm()
-        end = get_end_time()
+        end = get_time(Config.objects.all()[0].end)
+        start = get_time(Config.objects.all()[0].start)
         context = {
             "submission_form" : submission_form,
             "problem" : problem,
             "username" : user.username,
             "submission" : submission,
-            "end": end
+            "end": end,
+            "start": start,
         }
         return render(request,'problem.html',context)
     else:
@@ -103,12 +105,14 @@ def problemList(request):
         titles.append(problem.problem.title)
         ids.append(problem.problem_id)
         contest_id.append(problem.id)
-    end = get_end_time()
 
+    end = get_time(Config.objects.all()[0].end)
+    start = get_time(Config.objects.all()[0].start)
     context = {
         'data':list(zip(contest_id,ids,titles)),
         'username':user.username,
-        'end':end
+        'end':end,
+        "start":start,
     }
 
     return render(request,'problem_page.html',context)
@@ -120,6 +124,8 @@ def upload(request):
      """
     if request.method == "POST":
 
+        if(timezone.now() > Config.objects.all()[0].end):
+            return HttpResponse("Time Up! No more submissions.")
         ip_address = get_ip(request)
         problem_id = request.POST.get('problem_id')
         problem_ = contest_problem.objects.get(problem_id=problem_id)
@@ -165,7 +171,8 @@ def logout_view(request):
 def display_submissions(request):
     """ Renders submissions page to display submissions made till the given time """
     user = User.objects.get(id=request.session['_auth_user_id'])
-    end = get_end_time()
+    end = get_time(Config.objects.all()[0].end)
+    start = get_time(Config.objects.all()[0].start)
 
     if request.GET.keys():
         query = Submission.objects.filter(problem_id=request.GET['p'])
@@ -174,6 +181,7 @@ def display_submissions(request):
     context = {
             "submissions" : query,
             "username" : user.username,
-            "end" : end
+            "end" : end,
+            "start": start
     }
     return render(request,"display_submissions.html",context)
