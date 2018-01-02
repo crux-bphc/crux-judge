@@ -2,7 +2,7 @@
 
 ## Developers
 
-0. Follow the [install](install) instructions
+0. Follow the [install](install.md) instructions
 
 1. To start the Django Local Server, run the following commands:
 

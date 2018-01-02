@@ -2,7 +2,7 @@
 
 This is a programming judge which currently supports C language.
 
-It uses Django framework to host the server and is mainly written in Python3. MySQL is the database of choice.
+It uses Django framework to host the server and is mainly written in Python3. PostgreSQL is the database of choice.
 
 ## Features
 
@@ -16,8 +16,8 @@ It uses Django framework to host the server and is mainly written in Python3. My
 ## Techs Used
 
 1. Python3
-2. Django web server framework
-3. MySQL server
+2. Django web server framework-1.11
+3. PostgreSQL-9.6
 4. HTML/css/js
 5. gcc
 6. C
@@ -28,11 +28,11 @@ It uses Django framework to host the server and is mainly written in Python3. My
 
 We are currently trying to write more documentation. This is the list of currently written pages:
 
-* **[Installation Instructions](install)** - Guide on setting up the project.
-* **[Running Instructions](run)** - Instruction on how to start the server.
-* **[Directory Structure](structure)** - Basic guide to understand the working of the project.
-* **[ContestS](contest)** - Basic directory structure and usage guide for contests.
-* **[Admin Portal](admin)** - Guide on how to use the Django Admin Portal to manage the project.
+* **[Installation Instructions](install.md)** - Guide on setting up the project.
+* **[Running Instructions](run.md)** - Instruction on how to start the server.
+* **[Directory Structure](structure.md)** - Basic guide to understand the working of the project.
+* **[Contests](contest.md)** - Basic directory structure and usage guide for contests.
+* **[Admin Portal](admin.md)** - Guide on how to use the Django Admin Portal to manage the project.
 
 ## Contributors
 
@@ -51,4 +51,4 @@ The software is released under MIT License
 
 Copyright (c) 2017 [CRUx-The Programming & Computing Club](https://github.com/crux-BPHC) of [BITS-Pilani Hyderabad Campus](http://www.bits-pilani.ac.in/hyderabad)
 
-<img src="https://scontent.fbom1-1.fna.fbcdn.net/v/t1.0-1/p200x200/17904452_1491990900819437_3846562565023385004_n.png?oh=4a26af21c3764e36319197a532de47c7&oe=59DFB8EC" width="100">
+<img src="crux.svg" width="100">
