@@ -56,10 +56,10 @@ class Runner():
         """
         result = self.execute(self.submission_file,input_file)
         try:
-            output = result['output']
+            output = result['output'].strip()
             output_file_path = self.testcase_dir + '/' + 'output' + input_file.split('input')[1]
             output_file = open(output_file_path,'r')
-            expected_output = output_file.read()
+            expected_output = output_file.read().strip()
             if output == expected_output :
                 # correct answer
                 self.tests.append(0)
@@ -96,7 +96,14 @@ class Runner():
 
         try:
             # runs the terminal command - compile (gcc path/name.c -o path/name)
-            process_compile = subprocess.run(["gcc",file_path,"-o", executable_path,"--static"],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            process_compile = subprocess.run([
+                "gcc",
+                file_path,
+                "-o",
+                executable_path,
+                "--static"
+                ],
+                check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             # debug statements: 'process_compile' var holds returned process data
             # print ("\nprocess_compile stdout:",process_compile.stdout)
             # print ("process_compile stderr:",process_compile.stderr)
@@ -141,7 +148,23 @@ class Runner():
 
         result = {}
 
-        cmd = ["sudo",EXE,MEMORY_LIMIT,TIME_LIMIT,MAX_PIDS,MEMORY_CGROUP,CPUACCT_CGROUP,PIDS_CGROUP,JAIL_DIR,os.path.basename(EXECUTABLE_FILE),INPUT_FILE,OUTPUT_FILE,WHITELIST,UID,GID]
+        cmd = [
+            "sudo",
+            EXE,
+            MEMORY_LIMIT,
+            TIME_LIMIT,
+            MAX_PIDS,
+            MEMORY_CGROUP,
+            CPUACCT_CGROUP,
+            PIDS_CGROUP,
+            JAIL_DIR,
+            os.path.basename(EXECUTABLE_FILE),
+            INPUT_FILE,
+            OUTPUT_FILE,
+            WHITELIST,
+            UID,
+            GID
+        ]
         # process = subprocess.run(cmd,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         try:
             subprocess.check_call(cmd,stdout=subprocess.PIPE,timeout=2)
