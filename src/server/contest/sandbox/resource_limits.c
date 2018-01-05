@@ -45,6 +45,7 @@ typedef struct CpuTimeLimiterPayload {
 
 typedef struct CpuTimeLimiterCleanupPayload {
   int fd;
+  char **polled_content;
   CpuTimeLimiterPayload *ctlp;
 } CpuTimeLimiterCleanupPayload;
 
@@ -59,6 +60,7 @@ typedef struct NumTasksListenerPayload {
 typedef struct NumTasksListenerCleanupPayload {
   int fd;
   char *pids_events_path;
+  char **polled_content;
   NumTasksListenerPayload *ntlp;
 } NumTasksListenerCleanupPayload;
 
@@ -150,7 +152,7 @@ static int addToTasksFile(const char *cg, pid_t pid) {
         the read string is lexicographically greater then the string 'lim'
 */
 static int pollFileContent(
-  int fd, const char *lim, long long interval, int type) {
+  int fd, const char *lim, long long interval, int type, char **content) {
 
   long long seconds = interval / 10e9;
   long long nanoseconds = interval - seconds;
@@ -159,38 +161,33 @@ static int pollFileContent(
   req.tv_nsec = nanoseconds;
 
   int content_max_size = 20;
-  char *content = malloc(sizeof(char) * content_max_size);
+  *content = malloc(sizeof(char) * content_max_size);
   ssize_t bytes_read;
   while (1) {
     // content_max_len - 1 to accomodate a '\0'
-    if ((bytes_read = read(fd, content, content_max_size - 1)) == -1) {
+    if ((bytes_read = read(fd, *content, content_max_size - 1)) == -1) {
       printErr("read failed: errno: %d", errno);
-      free(content);
       return -1;
     }
     // -1 to overwrite the trailing new line
-    content[bytes_read - 1] = '\0';
+    (*content)[bytes_read - 1] = '\0';
     if (type == 1) {
-      if (atoll(content) > atoll(lim)) {
-        free(content);
+      if (atoll(*content) > atoll(lim)) {
         return 0;
       }
     } else {
-      if (strcmp(content, lim) > 0) {
-        free(content);
+      if (strcmp(*content, lim) > 0) {
         return 0;
       }
     }
 
     if (lseek(fd, 0, SEEK_SET) == -1) {
       printErr("lseek failed: errno: %d", errno);
-      free(content);
       return -1;
     }
 
     if (nanosleep(&req, NULL) == -1) {
       printErr("nanosleep interrupted by a signal handler or encountered an error: errno: %d", errno);
-      free(content);
       return -1;
     }
   }
@@ -386,6 +383,7 @@ static void cpuTimeLimiterCleanup(void *arg) {
   }
   free(ctlcp -> ctlp -> pid_dir);
   free(ctlcp -> ctlp);
+  free(*(ctlcp -> polled_content));
   free(ctlcp);
 }
 
@@ -415,6 +413,8 @@ static void *cpuTimeLimiter(void *arg) {
     sizeof(CpuTimeLimiterCleanupPayload));
   ctlcp -> fd = fd;
   ctlcp -> ctlp = ctlp;
+  char *polled_content = NULL;
+  ctlcp -> polled_content = &polled_content;
   pthread_cleanup_push(cpuTimeLimiterCleanup, ctlcp);
 
   if (fd == -1) {
@@ -439,7 +439,7 @@ static void *cpuTimeLimiter(void *arg) {
   }
 
   // Blocks until time limit exceeds
-  int poll_ret = pollFileContent(fd, ctlp -> cpu_time, TIME_LIM_POLL_INTERVAL, 1);
+  int poll_ret = pollFileContent(fd, ctlp -> cpu_time, TIME_LIM_POLL_INTERVAL, 1, &polled_content);
   int trylock_ret = pthread_mutex_trylock(ctlp -> term_child_mutex);
   if (trylock_ret == 0) {
     if (poll_ret == -1) {
@@ -518,6 +518,7 @@ static void numTasksListenerCleanup(void *arg) {
   }
   free(ntlcp -> ntlp -> pid_dir);
   free(ntlcp -> ntlp);
+  free(*(ntlcp -> polled_content));
   free(ntlcp);
 }
 
@@ -547,6 +548,8 @@ static void *numTasksListener(void *arg) {
     sizeof(NumTasksListenerCleanupPayload));
   ntlcp -> fd = fd;
   ntlcp -> ntlp = ntlp;
+  char *polled_content = NULL;
+  ntlcp -> polled_content = &polled_content;
   pthread_cleanup_push(numTasksListenerCleanup, ntlcp);
 
   if (fd == -1) {
@@ -577,7 +580,7 @@ static void *numTasksListener(void *arg) {
   }
 
   // Blocks until num tasks exceeds according to pids.events file
-  int poll_ret = pollFileContent(fd, "max 0", NUM_TASKS_LIM_POLL_INTERVAL, 2);
+  int poll_ret = pollFileContent(fd, "max 0", NUM_TASKS_LIM_POLL_INTERVAL, 2, &polled_content);
   int trylock_ret = pthread_mutex_trylock(ntlp -> term_child_mutex);
   if (trylock_ret == 0) {
     if (poll_ret == -1) {
