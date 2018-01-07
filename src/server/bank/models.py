@@ -10,7 +10,7 @@ class Problem(models.Model):
     problem_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=50,unique=False)
     statement = models.TextField(max_length=3000,unique=False)
-    uploadedby = models.ForeignKey(User,verbose_name="problem-setter")
+    uploadedby = models.ForeignKey(User,verbose_name="problem-setter",limit_choices_to={'is_staff': True})
     def __str__(self):
         return "{} : {}".format(self.problem_id,self.title)
     class Meta:
