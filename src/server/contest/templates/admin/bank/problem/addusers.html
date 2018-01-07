@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html"%}
+{% block title %} Add Users {% endblock %}
+
+{% block breadcrumbs %}
+
+    <div class="breadcrumbs">
+            <a href="/admin/">Home</a> >
+            <a href="/admin/auth/">Authentication and Authorization</a> >
+            <a href="/admin/auth/user/">Users</a> >
+            <a href="/admin/bank/problem/addusers">Testcases</a> 
+    </div>
+
+{% endblock %}
+
+{% block content %}
+
+    <div>
+        <form  id="user_records" action = "/admin/bank/problem/addusers/upload/" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ user_records_form }}
+            <input type="submit" value="Add users"
+            {% if user_records_form.fields.filename %}
+                onclick="alert('FILE UPLOADED SUCCESSFULLY');"
+            {% endif %}>
+        </form>
+    </div>
+
+{% endblock %}
+<!-- TODO: Improve UI -->

@@ -1,15 +1,17 @@
 import os
 import fnmatch
 from glob import glob
+import add_student_records
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import admin
 from .models import Problem
-from .forms import AddTestcase
+from .forms import AddTestcase, UserRecords
 from django.conf.urls import url
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from bank.models import Problem as bank_problems
 from django.core.files import File
+
 
 BASE_TEST_CASES_DIR = os.getcwd() + '/bank/testcases'
 
@@ -18,12 +20,14 @@ class ProblemAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super(ProblemAdmin, self).get_urls()
         testcases_url = [
+            url(r'^addusers/upload/$',self.admin_site.admin_view(self.user_records_upload)),
             url(r'^testcases/$',self.admin_site.admin_view(self.testcase_index)),
             url(r'^testcases/(?P<problem_id>[0-9]+)/$',self.admin_site.admin_view(self.list_testcases)),
             url(r'^testcases/(?P<problem_id>[0-9]+)/(?P<case_no>[0-9])$',self.admin_site.admin_view(self.view_testcase)),
             url(r'^testcases/add/(?P<problem_id>[0-9]+)/$',self.admin_site.admin_view(self.add_testcase)),
             url(r'^testcases/add/(?P<problem_id>[0-9]+)/save/$',self.admin_site.admin_view(self.save_testcase)),
             url(r'^testcases/(?P<problem_id>[0-9]+)/(?P<case_no>[0-9])/remove/$',self.admin_site.admin_view(self.remove_testcase)),
+            url(r'^addusers/$',self.admin_site.admin_view(self.addusers)),
         ]
         return testcases_url + urls
 
@@ -127,6 +131,23 @@ class ProblemAdmin(admin.ModelAdmin):
         os.remove(output_file_dir)
 
         return redirect('/admin/bank/problem/testcases/'+problem_id)
+
+    def addusers(self,request):
+
+    # TODO: URL to be changed. Link to be added in UI.
+        user_records_csv = UserRecords()
+        context = dict(
+            self.admin_site.each_context(request),
+            user_records_form = user_records_csv,
+        )
+        return render(request,"admin/bank/problem/addusers.html",context)
+
+    def user_records_upload(self,request):
+
+        uploaded_file = request.FILES['user_records']
+        add_student_records.readfile(uploaded_file)
+
+        return redirect("/admin/bank/problem/addusers/")
 
     list_display = [
         'problem_id',
