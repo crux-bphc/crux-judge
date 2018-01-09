@@ -11,7 +11,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from bank.models import Problem as bank_problems
 from django.core.files import File
-
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin
 
 BASE_TEST_CASES_DIR = os.getcwd() + '/bank/testcases'
 
@@ -20,14 +21,12 @@ class ProblemAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super(ProblemAdmin, self).get_urls()
         testcases_url = [
-            url(r'^addusers/upload/$',self.admin_site.admin_view(self.user_records_upload)),
             url(r'^testcases/$',self.admin_site.admin_view(self.testcase_index)),
             url(r'^testcases/(?P<problem_id>[0-9]+)/$',self.admin_site.admin_view(self.list_testcases)),
             url(r'^testcases/(?P<problem_id>[0-9]+)/(?P<case_no>[0-9])$',self.admin_site.admin_view(self.view_testcase)),
             url(r'^testcases/add/(?P<problem_id>[0-9]+)/$',self.admin_site.admin_view(self.add_testcase)),
             url(r'^testcases/add/(?P<problem_id>[0-9]+)/save/$',self.admin_site.admin_view(self.save_testcase)),
             url(r'^testcases/(?P<problem_id>[0-9]+)/(?P<case_no>[0-9])/remove/$',self.admin_site.admin_view(self.remove_testcase)),
-            url(r'^addusers/$',self.admin_site.admin_view(self.addusers)),
         ]
         return testcases_url + urls
 
@@ -132,22 +131,6 @@ class ProblemAdmin(admin.ModelAdmin):
 
         return redirect('/admin/bank/problem/testcases/'+problem_id)
 
-    def addusers(self,request):
-
-    # TODO: URL to be changed. Link to be added in UI.
-        user_records_csv = UserRecords()
-        context = dict(
-            self.admin_site.each_context(request),
-            user_records_form = user_records_csv,
-        )
-        return render(request,"admin/bank/problem/addusers.html",context)
-
-    def user_records_upload(self,request):
-
-        uploaded_file = request.FILES['user_records']
-        add_student_records.readfile(uploaded_file)
-
-        return redirect("/admin/bank/problem/addusers/")
 
     list_display = [
         'problem_id',
@@ -170,4 +153,49 @@ class ProblemAdmin(admin.ModelAdmin):
     ]
 
 
+class CustomUserAdmin(UserAdmin):
+    def __init__(self, *args, **kwargs):
+        super(UserAdmin,self).__init__(*args, **kwargs)
+
+    def get_urls(self):
+        urls = super(CustomUserAdmin, self).get_urls()
+        custom_urls = [
+            url(r'^addusers/upload/$',self.admin_site.admin_view(self.user_records_upload)),
+            url(r'^addusers/$',self.admin_site.admin_view(self.addusers)),
+        ]
+        return custom_urls + urls
+
+    def addusers(self,request):
+
+        user_records_csv = UserRecords()
+        context = dict(
+            self.admin_site.each_context(request),
+            user_records_form = user_records_csv,
+        )
+        return render(request,"admin/auth/user/addusers.html",context)
+
+    def user_records_upload(self,request):
+
+        uploaded_file = request.FILES['user_records']
+        add_student_records.readfile(uploaded_file)
+
+        return redirect("/admin/auth/user/addusers/")
+
+    def get_name(self,user):
+        return user.first_name + user.last_name
+    get_name.short_description = "Name"
+
+    list_display = [
+        'username',
+        'get_name',
+        'is_staff',
+    ]
+
+    list_display_links = [
+        'username',
+        'get_name',
+    ]
+
 admin.site.register(Problem, ProblemAdmin)
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)

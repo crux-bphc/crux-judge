@@ -7,7 +7,7 @@
             <a href="/admin/">Home</a> >
             <a href="/admin/auth/">Authentication and Authorization</a> >
             <a href="/admin/auth/user/">Users</a> >
-            <a href="/admin/bank/problem/addusers">Testcases</a> 
+            <a href="/admin/auth/user/addusers">Add multiple users</a>
     </div>
 
 {% endblock %}
@@ -15,7 +15,7 @@
 {% block content %}
 
     <div>
-        <form  id="user_records" action = "/admin/bank/problem/addusers/upload/" method="POST" enctype="multipart/form-data">
+        <form  id="user_records" action = "/admin/auth/user/addusers/upload/" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             {{ user_records_form }}
             <input type="submit" value="Add users"
