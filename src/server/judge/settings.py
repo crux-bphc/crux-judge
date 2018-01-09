@@ -60,7 +60,7 @@ ROOT_URLCONF = 'judge.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(os.getcwd(),'contest/templates/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

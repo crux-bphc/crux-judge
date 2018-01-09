@@ -336,3 +336,9 @@ table td {
 	text-align: left;
 	color: white;
 }
+#crux {
+	position: absolute;
+	bottom: 5px;
+	right: 10px;
+	color: white;
+}
