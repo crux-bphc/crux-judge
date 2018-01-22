@@ -1,6 +1,9 @@
+import os
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 #1. Problems: id,title, statement, output, uploadedby
 #2. Admins: id, name, email, passwordhash
@@ -16,3 +19,9 @@ class Problem(models.Model):
     class Meta:
         verbose_name='problem'
         ordering = ['problem_id']
+
+@receiver(post_save,sender=Problem)
+def check_config_count(sender, instance, **kwargs):
+    testcase_dir = os.path.join(os.getcwd(),"bank/testcases",str(instance.problem_id))
+    if(not os.path.isdir(testcase_dir)):
+        os.makedirs(testcase_dir)

@@ -102,7 +102,10 @@ class ProblemAdmin(admin.ModelAdmin):
             output_text = ''
 
         input_files = fnmatch.filter(os.listdir(testcase_dir),"input*")
-        latest_file_basename = os.path.basename(max(input_files))
+        try:
+            latest_file_basename = os.path.basename(max(input_files))
+        except ValueError:
+            latest_file_basename = "input0"    
         suffix = str(int(latest_file_basename.split('input')[1]) + 1)
 
         input_file = open(testcase_dir + "/input" + suffix, "w+")
