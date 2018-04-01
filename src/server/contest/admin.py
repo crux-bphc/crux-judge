@@ -1,13 +1,14 @@
 from django.contrib import admin
 from .models import Problem, Submission, Config
 
+
 class ProblemAdmin(admin.ModelAdmin):
 
-    def get_problem_title(self,problem):
+    def get_problem_title(self, problem):
         return problem.problem.title
     get_problem_title.short_description = "title"
 
-    def get_problem_statement(self,problem):
+    def get_problem_statement(self, problem):
         return problem.problem.statement
     get_problem_statement.short_description = "statement"
 
@@ -33,21 +34,22 @@ class ProblemAdmin(admin.ModelAdmin):
         'problem__statement'
     ]
 
+
 class SubmissionAdmin(admin.ModelAdmin):
 
-    def get_username(self,submission):
+    def get_username(self, submission):
         return submission.user.username
     get_username.short_description = "submitted-by (ID)"
 
-    def get_name(self,submission):
+    def get_name(self, submission):
         return (submission.user.first_name + " " + submission.user.last_name)
     get_name.short_description = "submitted-by (Name)"
 
-    def testcase_wise_result(self,submission):
+    def testcase_wise_result(self, submission):
         return submission.testcase_result_verbose()
     testcase_wise_result.short_description = "testcase wise result"
 
-    def get_problem_title(self,submission):
+    def get_problem_title(self, submission):
         return submission.problem.title
     get_problem_title.short_description = "problem"
 
