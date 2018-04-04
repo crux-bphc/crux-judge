@@ -1,6 +1,4 @@
-import os
-import fnmatch
-from glob import glob
+from pathlib import Path
 import add_student_records
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import admin
@@ -10,11 +8,10 @@ from django.conf.urls import url
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from bank.models import Problem as bank_problems
-from django.core.files import File
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 
-BASE_TEST_CASES_DIR = os.getcwd() + '/bank/testcases'
+BASE_TEST_CASES_DIR = Path.cwd() / 'bank/testcases'
 
 
 class ProblemAdmin(admin.ModelAdmin):
@@ -50,15 +47,12 @@ class ProblemAdmin(admin.ModelAdmin):
     def list_testcases(self, request, problem_id):
 
         try:
-            testcase_dir = BASE_TEST_CASES_DIR + "/" + str(problem_id)
+            testcase_dir = BASE_TEST_CASES_DIR / str(problem_id)
             problem = bank_problems.objects.get(problem_id=problem_id)
-            no_of_cases = len(glob(testcase_dir + '/input*'))
         except ObjectDoesNotExist:
             return HttpResponse("Problem does not exist")
-        except FileNotFoundError:
-            os.makedirs(testcase_dir)
-            no_of_cases = len(glob(testcase_dir + 'input*'))
 
+        no_of_cases = len(list(testcase_dir.glob('input*')))
         context = dict(
             self.admin_site.each_context(request),
             problem=problem,
@@ -69,18 +63,17 @@ class ProblemAdmin(admin.ModelAdmin):
     def view_testcase(self, request, problem_id, case_no):
 
         case_no = int(case_no)
-        testcase_dir = BASE_TEST_CASES_DIR + "/" + str(problem_id)
+        testcase_dir = BASE_TEST_CASES_DIR / str(problem_id)
+        input_files = sorted(testcase_dir.glob('input*'))
+        output_files = sorted(testcase_dir.glob('output*'))
 
-        input_files = sorted(glob(testcase_dir + "/input*"))
-        output_files = sorted(glob(testcase_dir + "/output*"))
-
-        input_file_dir = input_files[case_no]
-        output_file_dir = output_files[case_no]
+        input_file_path = input_files[case_no]
+        output_file_path = output_files[case_no]
 
         context = dict(
             self.admin_site.each_context(request),
-            input=open(input_file_dir, 'r').read(),
-            output=open(output_file_dir, 'r').read(),
+            input=input_file_path.open('r').read(),
+            output=output_file_path.open('r').read(),
             problem=bank_problems.objects.get(problem_id=problem_id),
             case_no=case_no
         )
@@ -101,7 +94,7 @@ class ProblemAdmin(admin.ModelAdmin):
 
     def save_testcase(self, request, problem_id):
 
-        testcase_dir = os.path.join(BASE_TEST_CASES_DIR, str(problem_id))
+        testcase_dir = BASE_TEST_CASES_DIR / str(problem_id)
 
         form = AddTestcase(request.POST)
         if form.is_valid:
@@ -111,18 +104,20 @@ class ProblemAdmin(admin.ModelAdmin):
             input_text = ''
             output_text = ''
 
-        input_files = fnmatch.filter(os.listdir(testcase_dir), "input*")
+        input_files = testcase_dir.glob("input*")
         try:
-            latest_file_basename = os.path.basename(max(input_files))
+            latest_file_basename = max(input_files).stem
         except ValueError:
             latest_file_basename = "input0"
         suffix = str(int(latest_file_basename.split('input')[1]) + 1)
 
-        input_file = open(testcase_dir + "/input" + suffix, "w+")
+        inp_file_path = testcase_dir / ("input" + suffix)
+        input_file = inp_file_path.open("w+")
         input_file.write(input_text)
         input_file.close()
 
-        output_file = open(testcase_dir + "/output" + suffix, "w+")
+        outp_file_path = testcase_dir / ("output" + suffix)
+        output_file = outp_file_path.open("w+")
         output_file.write(output_text)
         output_file.close()
 
@@ -131,16 +126,14 @@ class ProblemAdmin(admin.ModelAdmin):
     def remove_testcase(self, request, problem_id, case_no):
 
         case_no = int(case_no)
-        testcase_dir = os.path.join(BASE_TEST_CASES_DIR, str(problem_id))
+        testcase_dir = BASE_TEST_CASES_DIR / str(problem_id)
 
-        input_files = sorted(glob(testcase_dir + "/input*"))
-        output_files = sorted(glob(testcase_dir + "/output*"))
-
-        input_file_dir = input_files[case_no]
-        output_file_dir = output_files[case_no]
-
-        os.remove(input_file_dir)
-        os.remove(output_file_dir)
+        input_files = sorted(testcase_dir.glob('input*'))
+        output_files = sorted(testcase_dir.glob('output*'))
+        input_file_path = input_files[case_no]
+        output_file_path = output_files[case_no]
+        input_file_path.unlink()
+        output_file_path.unlink()
 
         return redirect('/admin/bank/problem/testcases/' + problem_id)
 
