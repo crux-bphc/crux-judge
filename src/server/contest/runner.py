@@ -78,25 +78,10 @@ class Runner():
         """Run files on local computer.
         file_path is the name of the file with absolute path """
 
-        # # file_path cotains the name of the file with path and extension
-        # file_path_without_extension = file_path.parent / file_path.stem
-        # # contains directory part of file_path
-        # file_dir = file_path.parent
-        # # name of the file
-        # file_name = file_path.name
-        # # name of the file without extension
-        # file_name_without_extension = file_path.stem
         # executable is stored in /sandbox/jail/executable
         EXECUTABLE_FILE = "executable_" + str(self.submission.id)
         executable_path = JAIL_DIR / EXECUTABLE_FILE
         JAIL_DIR.mkdir(parents=True, exist_ok=True)  # if the dir doesn't exist
-        # # printing for testing purposes
-        # print("file_path:", file_path)
-        # print("file_path_without_extension:", file_path_without_extension)
-        # print("file dir:", file_dir)
-        # print("file name:", file_name)
-        # print("file name without extension:", file_name_without_extension)
-        # print("executable file directory:", executable_path)
 
         try:
             # run the terminal command - compile (gcc path/name.c -o path/name)
