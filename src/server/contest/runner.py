@@ -1,34 +1,32 @@
-import os
-import fnmatch
 import subprocess as sp
 from .sandbox_config import *
 from .models import Problem as contest_problem
+from pathlib import Path
+
+cwd = Path.cwd()
 
 
 class Runner():
     """To compile, execute and evaluate the
     submitted code against saved testcases """
-
-    BASE_TEST_CASES_DIR = os.getcwd() + '/bank/testcases'
-    BASE_SUBMISSION_DIR = os.getcwd() + '/contest/submissions'
+    BASE_TEST_CASES_DIR = cwd / 'bank/testcases'
+    BASE_SUBMISSION_DIR = cwd / 'contest/submissions'
 
     def __init__(self, submission):
         # Takes problem and user object as arguments
         self.submission = submission
         self.problem_id = self.submission.problem.problem_id
         self.user = self.submission.user.username
-        self.testcase_dir = self.BASE_TEST_CASES_DIR + \
-            "/" + str(self.problem_id)
+        self.testcase_dir = self.BASE_TEST_CASES_DIR / str(self.problem_id)
         self.inputs(self.testcase_dir)
-        self.submission_file = self.BASE_SUBMISSION_DIR + \
-            '/' + self.user + '_' + str(self.problem_id) + '.c'
+        file_name = self.user + '_' + str(self.problem_id) + '.c'
+        self.submission_file = self.BASE_SUBMISSION_DIR / file_name
         self.MAX_SCORE = contest_problem.objects.get(
             problem_id=self.problem_id).max_score
 
-    def inputs(self, testcase_dir):
+    def inputs(self, testcase_dir: Path):
         """ Prepare input files """
-        self.input_files = fnmatch.filter(os.listdir(testcase_dir), 'input*')
-        self.input_files.sort()
+        self.input_files = sorted(testcase_dir.glob('input*'))
 
     def check_all(self):
         """Save return code for every test case in tests[]
@@ -38,8 +36,7 @@ class Runner():
         """
         self.tests = []
         for case in self.input_files:
-            path = self.testcase_dir + '/' + case
-            self.check_result(path)
+            self.check_result(case)
         self.submission.testcase_codes = str(self.tests)
         self.submission.save()
 
@@ -47,7 +44,7 @@ class Runner():
         print("\n\nTEST CASES RESPONSES : ", end='')
         print(self.tests)
 
-    def check_result(self, input_file):
+    def check_result(self, input_file: Path):
         """
             self.tests[] stores return codes of all cases
             0 : correct answer
@@ -62,9 +59,9 @@ class Runner():
         result = self.execute(self.submission_file, input_file)
         try:
             output = result['output'].strip()
-            output_file_path = self.testcase_dir + '/' + \
-                'output' + input_file.split('input')[1]
-            output_file = open(output_file_path, 'r')
+            output_file_name = input_file.name.replace('input', 'output')
+            output_file_path = self.testcase_dir / output_file_name
+            output_file = output_file_path.open('r')
             expected_output = output_file.read().strip()
             if output == expected_output:
                 # correct answer
@@ -77,44 +74,43 @@ class Runner():
             # compilation/runtime error
             self.tests.append(result['error'])
 
-    def execute(self, file_path, input_file_path):
+    def execute(self, file_path: Path, input_file_path: Path):
         """Run files on local computer.
         file_path is the name of the file with absolute path """
 
-        # file_path cotains the name of the file with path and extension
-        file_path_without_extension = os.path.splitext(file_path)[0]
-        # contains directory part of file_path
-        file_dir = os.path.dirname(file_path)
-        # name of the file
-        file_name = os.path.basename(file_path)
-        # name of the file without extension
-        file_name_without_extension = file_name.split('.')[0]
+        # # file_path cotains the name of the file with path and extension
+        # file_path_without_extension = file_path.parent / file_path.stem
+        # # contains directory part of file_path
+        # file_dir = file_path.parent
+        # # name of the file
+        # file_name = file_path.name
+        # # name of the file without extension
+        # file_name_without_extension = file_path.stem
         # executable is stored in /sandbox/jail/executable
         EXECUTABLE_FILE = "executable_" + str(self.submission.id)
-        executable_path = os.getcwd() + "/contest/sandbox/jail/" + \
-            EXECUTABLE_FILE
-
-        # printing for testing purposes
-        # print ("file_path: "+file_path)
-        # print ("file_path_without_extension: "+file_path_without_extension)
-        # print ("file dir : "+file_dir)
-        # print ("file name : "+file_name)
-        # print ("file name without extension : "+file_name_without_extension)
-        # print("executable file directory:" + executable_path)
+        executable_path = JAIL_DIR / EXECUTABLE_FILE
+        JAIL_DIR.mkdir(parents=True, exist_ok=True)  # if the dir doesn't exist
+        # # printing for testing purposes
+        # print("file_path:", file_path)
+        # print("file_path_without_extension:", file_path_without_extension)
+        # print("file dir:", file_dir)
+        # print("file name:", file_name)
+        # print("file name without extension:", file_name_without_extension)
+        # print("executable file directory:", executable_path)
 
         try:
             # run the terminal command - compile (gcc path/name.c -o path/name)
             process_compile = sp.run([
                 "gcc",
-                file_path,
+                str(file_path),
                 "-o",
-                executable_path,
+                str(executable_path),
                 "--static"
             ],
                 check=True, stdout=sp.PIPE, stderr=sp.PIPE)
             # debug statements: 'process_compile' holds returned process data
-            # print ("\nprocess_compile stdout:",process_compile.stdout)
-            # print ("process_compile stderr:",process_compile.stderr)
+            print("\nprocess_compile stdout:", process_compile.stdout)
+            print("process_compile stderr:", process_compile.stderr)
 
         # if compilation is not clear, then handle it
         except sp.CalledProcessError as e:
@@ -129,7 +125,7 @@ class Runner():
         else:
             # check if an input file exists. take input from it if exists
             try:
-                input_file = open(input_file_path)
+                input_file = input_file_path.open()
             except FileNotFoundError:
                 input_file = sp.PIPE
 
@@ -149,31 +145,28 @@ class Runner():
         print(score, end="\n\n")
         return score
 
-    def safe_execution(self, input_file_path):
+    def safe_execution(self, input_file_path: Path):
         """Use sandbox to execute compiled executables of submitted C code."""
 
         INPUT_FILE = input_file_path
-        OUTPUT_FILE = os.getcwd() + "/contest/sandbox/output_" + \
-            str(self.submission.id)
-        EXECUTABLE_FILE = os.getcwd() + "/contest/sandbox/jail/" + \
-            "executable_" + str(self.submission.id)
-
+        OUTPUT_FILE = SANDBOX_PATH / ("output_" + str(self.submission.id))
+        EXECUTABLE_FILE = JAIL_DIR / ("executable_" + str(self.submission.id))
         result = {}
 
         cmd = [
             "sudo",
-            EXE,
+            str(EXE),
             MEMORY_LIMIT,
             TIME_LIMIT,
             MAX_PIDS,
             MEMORY_CGROUP,
             CPUACCT_CGROUP,
             PIDS_CGROUP,
-            JAIL_DIR,
-            os.path.basename(EXECUTABLE_FILE),
-            INPUT_FILE,
-            OUTPUT_FILE,
-            WHITELIST,
+            str(JAIL_DIR),
+            EXECUTABLE_FILE.name,
+            str(INPUT_FILE),
+            str(OUTPUT_FILE),
+            str(WHITELIST),
             UID,
             GID
         ]
@@ -182,7 +175,7 @@ class Runner():
             sp.check_call(cmd, stdout=sp.PIPE, timeout=2)
             # timeout = time alloted to sandbox for execution.
             # If exceeded, returns TLE error
-            output = open(OUTPUT_FILE, 'r')
+            output = OUTPUT_FILE.open('r')
             result['output'] = output.read()
         except sp.CalledProcessError as e:
             # 2-runtime error, 3-memory limit exceeded, 4-time limit exceeded
@@ -193,7 +186,7 @@ class Runner():
             result['error'] = 4
 
         # remove executable and output files created
-        sp.run(["rm", "-f", OUTPUT_FILE, EXECUTABLE_FILE],
+        sp.run(["rm", "-f", str(OUTPUT_FILE), str(EXECUTABLE_FILE)],
                check=True, stdout=sp.PIPE, stderr=sp.PIPE)
 
         return result
