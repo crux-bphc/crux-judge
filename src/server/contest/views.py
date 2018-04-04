@@ -13,6 +13,7 @@ from . import runner
 from ipware.ip import get_ip
 from django.utils import timezone
 from django.contrib import messages
+from pathlib import Path
 
 # Create your views here.
 
@@ -144,13 +145,14 @@ def upload(request):
             '_' + str(problem_.problem_id) + '.c'
 
         uploaded_filedata = request.FILES['submission_file']
+        submissions_fold = Path('contest/submissions')
         # creates /contest/submissions folder if does not exist
-        if not os.path.isdir("contest/submissions"):
-            os.makedirs("contest/submissions")
+        if not submissions_fold.exists():
+            submissions_fold.mkdir()
 
         # creates new file in /contest/submissions
-        filepath = "contest/submissions/" + submission_file_name
-        submission_file = open(filepath, "wb+")
+        filepath = submissions_fold / submission_file_name
+        submission_file = filepath.open("wb+")
 
         # write to file - failsafe for handling large file
         for chunk in uploaded_filedata.chunks():
