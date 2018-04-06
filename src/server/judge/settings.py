@@ -11,10 +11,9 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+BASE_DIR = Path(__file__)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -25,7 +24,7 @@ SECRET_KEY = '28_3-ql7tposo-s+qvkhb3hs58uoo5hqb!x@m+28wgv%she5v5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','192.168.43.101']
+ALLOWED_HOSTS = ['127.0.0.1', '192.168.43.101']
 
 
 # Application definition
@@ -37,7 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-   # 'trial',
+    # 'trial',
     'contest',
     'bank'
 )
@@ -60,7 +59,7 @@ ROOT_URLCONF = 'judge.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(os.getcwd(),'contest/templates/')],
+        'DIRS': [str(Path.cwd() / 'contest/templates/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
