@@ -61,8 +61,8 @@ class Runner():
             output = result['output'].strip()
             output_file_name = input_file.name.replace('input', 'output')
             output_file_path = self.testcase_dir / output_file_name
-            output_file = output_file_path.open('r')
-            expected_output = output_file.read().strip()
+            with output_file_path.open('r') as output_file:
+                expected_output = output_file.read().strip()
             if output == expected_output:
                 # correct answer
                 self.tests.append(0)
@@ -108,12 +108,6 @@ class Runner():
 
         # if compilation is clear, try to run the file
         else:
-            # check if an input file exists. take input from it if exists
-            try:
-                input_file = input_file_path.open()
-            except FileNotFoundError:
-                input_file = sp.PIPE
-
             result = self.safe_execution(input_file_path)
             return result
 
@@ -160,8 +154,8 @@ class Runner():
             sp.check_call(cmd, stdout=sp.PIPE, timeout=2)
             # timeout = time alloted to sandbox for execution.
             # If exceeded, returns TLE error
-            output = OUTPUT_FILE.open('r')
-            result['output'] = output.read()
+            with OUTPUT_FILE.open('r') as output:
+                result['output'] = output.read()
         except sp.CalledProcessError as e:
             # 2-runtime error, 3-memory limit exceeded, 4-time limit exceeded
             result['error'] = e.returncode

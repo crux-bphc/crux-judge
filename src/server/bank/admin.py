@@ -69,11 +69,14 @@ class ProblemAdmin(admin.ModelAdmin):
 
         input_file_path = input_files[case_no]
         output_file_path = output_files[case_no]
-
+        with input_file_path.open('r') as inp_file:
+            inp = inp_file.read()
+        with output_file_path.open('r') as out_file:
+            out = out_file.read()
         context = dict(
             self.admin_site.each_context(request),
-            input=input_file_path.open('r').read(),
-            output=output_file_path.open('r').read(),
+            input=inp,
+            output=out,
             problem=bank_problems.objects.get(problem_id=problem_id),
             case_no=case_no
         )
@@ -112,14 +115,12 @@ class ProblemAdmin(admin.ModelAdmin):
         suffix = str(int(latest_file_basename.split('input')[1]) + 1)
 
         inp_file_path = testcase_dir / ("input" + suffix)
-        input_file = inp_file_path.open("w+")
-        input_file.write(input_text)
-        input_file.close()
+        with inp_file_path.open("w+") as input_file:
+            input_file.write(input_text)
 
         outp_file_path = testcase_dir / ("output" + suffix)
-        output_file = outp_file_path.open("w+")
-        output_file.write(output_text)
-        output_file.close()
+        with outp_file_path.open("w+") as output_file:
+            output_file.write(output_text)
 
         return redirect('/admin/bank/problem/testcases/' + problem_id)
 
