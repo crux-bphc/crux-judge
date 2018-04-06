@@ -6,9 +6,7 @@ from django.contrib.auth.models import User
 from contest.models import Profile, Config
 from django.contrib.auth import authenticate, login, logout
 from bank.models import Problem as all_problems
-from time import sleep, mktime
-import os
-from datetime import datetime
+from time import mktime
 from . import runner
 from ipware.ip import get_ip
 from django.utils import timezone
@@ -152,12 +150,9 @@ def upload(request):
 
         # creates new file in /contest/submissions
         filepath = submissions_fold / submission_file_name
-        submission_file = filepath.open("wb+")
-
-        # write to file - failsafe for handling large file
-        for chunk in uploaded_filedata.chunks():
-            submission_file.write(chunk)
-        submission_file.close()
+        with filepath.open('wb+') as submission_file:
+            for chunk in uploaded_filedata.chunks():
+                submission_file.write(chunk)
 
         submission = Submission.objects.create(
             problem=problem_.problem,
