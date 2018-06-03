@@ -187,7 +187,7 @@ def display_submissions(request):
     if request.GET.keys():
         query = Submission.objects.filter(problem_id=request.GET['p'])
     else:
-        query = Submission.objects.all().order_by('-time')
+        query = Submission.objects.all()
     context = {
         "submissions": query,
         "username": user.username,
