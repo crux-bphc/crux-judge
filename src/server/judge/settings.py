@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -89,6 +90,7 @@ DATABASES = {
 }
 
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
@@ -108,3 +110,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "static"
+
+# the URL where requests are redirected for login,
+# especially when using the login_required() decorator.
+LOGIN_URL = '/'
+

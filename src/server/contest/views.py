@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from ipware.ip import get_ip
 
 from .forms import LoginForm, SubmissionForm
@@ -80,26 +81,23 @@ def auth(request):
     else:
         return HttpResponse("contest/auth/")
 
-
+@login_required
 def problem(request, problem_id, submission=None):
     """ Renders the page that lists all problems of the contest"""
-    if request.user.is_authenticated:
-        problem = all_problems.objects.get(problem_id=problem_id)
-        user = User.objects.get(id=request.session['_auth_user_id'])
-        submission_form = SubmissionForm()
-        end = get_time(Config.objects.all()[0].end)
-        start = get_time(Config.objects.all()[0].start)
-        context = {
-            "submission_form": submission_form,
-            "problem": problem,
-            "username": user.username,
-            "submission": submission,
-            "end": end,
-            "start": start,
-        }
-        return render(request, 'problem.html', context)
-    else:
-        return HttpResponse("Session Expired. Login again")
+    problem = all_problems.objects.get(problem_id=problem_id)
+    user = User.objects.get(id=request.session['_auth_user_id'])
+    submission_form = SubmissionForm()
+    end = get_time(Config.objects.all()[0].end)
+    start = get_time(Config.objects.all()[0].start)
+    context = {
+        "submission_form": submission_form,
+        "problem": problem,
+        "username": user.username,
+        "submission": submission,
+        "end": end,
+        "start": start,
+    }
+    return render(request, 'problem.html', context)
 
 
 def problemList(request):

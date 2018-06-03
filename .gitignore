@@ -104,3 +104,5 @@ src/server/bank/testcases/*
 # Student records
 *.csv
 
+# sqlite3 databases
+*.sqlite3
