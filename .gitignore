@@ -106,3 +106,6 @@ src/server/bank/testcases/*
 
 # sqlite3 databases
 *.sqlite3
+
+# sandbox executable
+sandbox-exe
