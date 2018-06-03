@@ -1,0 +1,14 @@
+
+{% if exception %}
+  <p>{{ exception }}</p>
+{% else %}
+  <p>Static generic message</p>
+{% endif %}
+<br>
+ <button onclick="goBack()">Go Back</button>
+
+<script>
+function goBack() {
+    window.history.back();
+}
+</script>
