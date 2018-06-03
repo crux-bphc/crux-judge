@@ -66,6 +66,10 @@ class Submission(models.Model):
         print(tests)
         return list(map(code_to_string, tests))
 
+    class Meta:
+        # Ordering submissions in descending order as per time
+        ordering = ["-time"]
+
 
 class Config(models.Model):
     start = models.DateTimeField(verbose_name='Start Time')
