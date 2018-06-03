@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Problem, Submission, Config
 
+from .models import Problem, Submission, Config
 
 class ProblemAdmin(admin.ModelAdmin):
 

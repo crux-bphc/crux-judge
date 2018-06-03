@@ -1,17 +1,19 @@
+from pathlib import Path
+from time import mktime
+
 from django.http import HttpResponse
 from django.shortcuts import render
-from .forms import LoginForm, SubmissionForm
-from .models import Problem as contest_problem, Submission
 from django.contrib.auth.models import User
-from contest.models import Profile, Config
 from django.contrib.auth import authenticate, login, logout
-from bank.models import Problem as all_problems
-from time import mktime
-from . import runner
-from ipware.ip import get_ip
 from django.utils import timezone
 from django.contrib import messages
-from pathlib import Path
+from ipware.ip import get_ip
+
+from .forms import LoginForm, SubmissionForm
+from .models import Problem as contest_problem, Submission
+from contest.models import Profile, Config
+from bank.models import Problem as all_problems
+from . import runner
 
 # Create your views here.
 

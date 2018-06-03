@@ -1,15 +1,17 @@
 from pathlib import Path
-import add_student_records
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import admin
-from .models import Problem
-from .forms import AddTestcase, UserRecords
 from django.conf.urls import url
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from bank.models import Problem as bank_problems
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
+
+from .models import Problem
+from .forms import AddTestcase, UserRecords
+from bank.models import Problem as bank_problems
+import add_student_records
 
 BASE_TEST_CASES_DIR = Path.cwd() / 'bank/testcases'
 
