@@ -1,7 +1,9 @@
+from pathlib import Path
+
 import subprocess as sp
+
 from .sandbox_config import *
 from .models import Problem as contest_problem
-from pathlib import Path
 
 cwd = Path.cwd()
 

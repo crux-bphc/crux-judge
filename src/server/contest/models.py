@@ -66,6 +66,10 @@ class Submission(models.Model):
         print(tests)
         return list(map(code_to_string, tests))
 
+    class Meta:
+        # Ordering submissions in descending order as per time
+        ordering = ["-time"]
+
 
 class Config(models.Model):
     start = models.DateTimeField(verbose_name='Start Time')
@@ -77,7 +81,11 @@ class Config(models.Model):
 @receiver(pre_save, sender=Config)
 def check_config_count(sender, **kwargs):
     if sender.objects.count() >= 1:
-        raise PermissionDenied
+        ErrorMessage = """
+        More than one config per contest is not allowed.
+        To add another first delete the previous one.
+        """
+        raise PermissionDenied(ErrorMessage)
 
 
 class Profile(models.Model):

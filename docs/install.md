@@ -4,7 +4,7 @@
 
 Clone the repository from [GitHub](https://github.com/crux-bphc/crux-judge).
 
-You need pip3, MySQL and virtualenv installed on your system. For Debian/Ubuntu, run the following commands:
+You need pip3, postgresql and virtualenv installed on your system. For Debian/Ubuntu, run the following commands:
 
 ```bash
 sudo apt install python3-pip -y
@@ -19,6 +19,13 @@ git clone -b development https://github.com/crux-bphc/crux-judge
 cd crux-judge
 tools/setup
 ```
+Now, run the following command to compile your own sandbox-exe:
+
+```bash
+sudo apt install libseccomp2 libseccomp-dev
+gcc src/server/contest/sandbox/*.c -lm -pthread -lseccomp -o src/server/contest/sandbox/sandbox-exe
+```
+
 
 <!-- TODO : Add instructions for setting up postgresql-9.6 -->
 
