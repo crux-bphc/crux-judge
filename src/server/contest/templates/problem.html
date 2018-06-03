@@ -13,7 +13,9 @@
             <a href = "/contest/submissions/">All Submissions</a>
         </div>
         <div class="p-desc">
-            <h2>{{problem.problem_id}}. {{problem.title}}</h2>
+            <h2>{{problem.problem_id}}. {{problem.title}}
+                <small> (Your best: {{ best_score }}/{{ max_score }})</small>
+            </h2>
             <p>
                 {{problem.statement|linebreaksbr}}
             </p><br/><br/>
