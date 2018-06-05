@@ -19,7 +19,8 @@ class Problem(models.Model):
     uploadedby = models.ForeignKey(
         User,
         verbose_name="problem-setter",
-        limit_choices_to={'is_staff': True}
+        limit_choices_to={'is_staff': True},
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
