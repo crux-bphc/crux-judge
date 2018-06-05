@@ -20,7 +20,11 @@ from django.conf import settings
 
 urlpatterns = [
     url(r'^', include('contest.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+
+    # from Django 1.9+, you don't need to use include.
+    # Use the callable admin.site.urls, not the string 'admin.site.urls'
+
+    url(r'^admin/', admin.site.urls),
     url(r'^bank/', include('bank.urls')),
     url(r'^contest/', include('contest.urls'))
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
