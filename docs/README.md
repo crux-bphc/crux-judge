@@ -8,7 +8,7 @@ It uses Django framework to host the server and is mainly written in Python3. Po
 
 1. Problem bank
 2. Partial marking using testcases
-3. Safe execution of executables using [sandbox]((https://github.com/ajay0/sandbox) (written in C)
+3. Safe execution of executables using [sandbox](https://github.com/ajay0/sandbox) (written in C)
 4. Anti-cheat to prevent counterfeit submissions (under development)
 5. Django admin facilitates easy creation of users and groups
 
