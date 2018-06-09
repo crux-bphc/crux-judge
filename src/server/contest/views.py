@@ -1,5 +1,7 @@
 from pathlib import Path
 from time import mktime
+from shutil import copyfile
+from math import isclose
 
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -31,7 +33,7 @@ def get_time(time_):
 def index(request):
     # request.session.clear_expired()
     print(timezone.localtime())
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return problemList(request)
 
     login_form = LoginForm()
@@ -63,6 +65,9 @@ def auth(request):
             start = active_config.start
             end = active_config.end
 
+        # TODO: multi-login checker is causing some error.
+        # user.profile.logged_in is true even when all tabs are closed.
+
         if user is not None and user.is_active and not user.profile.logged_in \
            and start < timezone.now() < end:
             # login_ successful
@@ -77,6 +82,7 @@ def auth(request):
 
         else:
             # login_ failed
+            print("Login Failed")
             context = {"login_form": LoginForm()}
             return render(request, 'contest_login.html', context)
     else:
@@ -173,7 +179,25 @@ def upload(request):
 
         evaluate = runner.Runner(submission)
         evaluate.check_all()
-        evaluate.score_obtained()
+        score = evaluate.score_obtained()
+
+        #Save best submission of user
+
+        current_problem = all_problems.objects.get(problem_id=problem_id)
+        user_submissions = Submission.objects.all().filter(user=request.user, problem=current_problem)
+        best_submission = user_submissions.aggregate(Max('score'))['score__max']
+
+        # Comparing float score values upto first decimal place
+        if(isclose(score, best_submission, abs_tol=0.1)):
+            best_folder = Path('contest/submissions/best')
+            if not best_folder.exists():
+                best_folder.mkdir()
+
+            source_file = "contest/submissions/"+user.username+"_"+problem_id+".c"
+            dest_file = "contest/submissions/best/"+user.username+"_"+problem_id+".c"
+            copyfile(source_file, dest_file)
+            print("Best submission: "+user.username)
+
 
         return problem(request, problem_.problem_id, evaluate)
     else:
@@ -205,3 +229,4 @@ def display_submissions(request):
         "start": start
     }
     return render(request, "display_submissions.html", context)
+
