@@ -10,5 +10,5 @@ urlpatterns = [
     url(r'^logout', views.logout_view, name='logout'),
     url(r'^submissions', views.display_submissions, name='submissions'),
     url(r'^submissions/(?P<p>[0-9]+)/$',
-        views.display_submissions, name='problem_submissions')
+        views.display_submissions, name='problem_submissions'),
 ]
