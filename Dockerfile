@@ -9,4 +9,10 @@ RUN ["pip3", "install", "Django==1.11.2", "uwsgi", "django-ipware", "psycopg2"]
 COPY cruxjudge_nginx.conf /etc/nginx/sites-available/
 RUN ["ln", "-s", "/etc/nginx/sites-available/cruxjudge_nginx.conf", "/etc/nginx/sites-enabled/cruxjudge_nginx.conf"]
 
+WORKDIR /root/home/cruxjudge/src/server
+CMD ["python3", "manage.py", "collectstatic"]
+CMD ["python3", "manage.py", "migrate"]
+CMD ["service", "nginx", "restart"]
+CMD ["uwsgi", "--ini", "/root/home/cruxjudge/cruxjudge_uwsgi.ini"]
+
 EXPOSE 8000
