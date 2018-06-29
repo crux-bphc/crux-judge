@@ -47,7 +47,7 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 MIDDLEWARE = (
 
     # SessionAuthenticationMiddleware is activated by default in django-2.0.x
-    
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -83,11 +83,8 @@ WSGI_APPLICATION = 'judge.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cruxjudgedb',
-        'USER': 'cruxjudge',
-        'PASSWORD': 'pass@cruxjudge',
-        'HOST': 'localhost'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
     }
 }
 
@@ -116,4 +113,3 @@ STATIC_ROOT = BASE_DIR / "static"
 # the URL where requests are redirected for login,
 # especially when using the login_required() decorator.
 LOGIN_URL = '/'
-
