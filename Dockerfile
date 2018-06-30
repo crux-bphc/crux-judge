@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y \
     nginx \
     nano \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install Django==1.11.2 uwsgi django-ipware psycopg2
+    && pip3 install Django==1.11.2 uwsgi django-ipware psycopg2 \
+    && mkdir -p /root/home/cruxjudge/src/server/contest/testcases \
+    && mkdir -p /root/home/cruxjudge/src/server/contest/sandbox/jail
 
 # Add nginx config
 ADD cruxjudge_nginx.conf /etc/nginx/sites-available/
