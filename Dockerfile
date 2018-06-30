@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     git \
     sudo \
     libseccomp2 \
+    libseccomp-dev \
     python3 \
     python3-pip \
     nginx \
@@ -25,6 +26,7 @@ WORKDIR /root/home/cruxjudge/src/server
 
 CMD python3 manage.py collectstatic \
     && python3 manage.py migrate \
+    && gcc contest/sandbox/*.c -lm -pthread -lseccomp -o contest/sandbox/sandbox-exe \
     && service nginx restart \
     && uwsgi --ini /root/home/cruxjudge/cruxjudge_uwsgi.ini
 
