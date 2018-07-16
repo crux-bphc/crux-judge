@@ -1,0 +1,47 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %} Download Submissions {% endblock %}
+
+{% block content %}
+<br><br>
+
+<div class="container">
+    <div class="p-header">
+        <h3>Download Submissions 
+        	<small>
+        	  (Click on the filename to download)
+        	</small>
+        </h3>
+    </div>
+</div>
+
+<div class=container">
+	<div class="p-sub">
+        <table>
+            <thead>
+                <tr>
+                    <th class="cell">Username</th>
+                    <th class="cell">Problem No.</th>
+                    <th class="cell">Best Submission</th>
+                    <th class="cell">Latest Submission</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for username, problem_no, file in submissions %}
+                <tr>
+                    <td>{{ username }}</td>
+                    <td>{{ problem_no }}</td>
+                    <td>
+                      <a href="/admin/contest/submission/download/{{file}}/type=best/">{{file}}</a>
+                	</td>
+                	<td>
+                	  <a href="/admin/contest/submission/download/{{file}}/type=latest/">{{file}}</a>
+                	</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
