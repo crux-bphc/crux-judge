@@ -11,8 +11,10 @@ cwd = Path.cwd()
 class Runner():
     """To compile, execute and evaluate the
     submitted code against saved testcases """
+    
     BASE_TEST_CASES_DIR = cwd / 'bank/testcases'
     BASE_SUBMISSION_DIR = cwd / 'contest/submissions'
+    LATEST_SUBMISSION_DIR = BASE_SUBMISSION_DIR / 'latest'
 
     def __init__(self, submission):
         # Takes problem and user object as arguments
@@ -22,7 +24,7 @@ class Runner():
         self.testcase_dir = self.BASE_TEST_CASES_DIR / str(self.problem_id)
         self.inputs(self.testcase_dir)
         file_name = self.user + '_' + str(self.problem_id) + '.c'
-        self.submission_file = self.BASE_SUBMISSION_DIR / file_name
+        self.submission_file = self.LATEST_SUBMISSION_DIR / file_name
         self.MAX_SCORE = contest_problem.objects.get(
             problem_id=self.problem_id).max_score
 

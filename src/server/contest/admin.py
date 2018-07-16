@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.conf.urls import url
 
 from .models import Problem, Submission, Config
+from .views import submissions_download_response, submissions_download_view
 
 class ProblemAdmin(admin.ModelAdmin):
 
@@ -36,6 +38,18 @@ class ProblemAdmin(admin.ModelAdmin):
 
 
 class SubmissionAdmin(admin.ModelAdmin):
+
+    def get_urls(self):
+        urls = super(SubmissionAdmin, self).get_urls()
+        testcases_url = [
+            url(r'^download/(?P<filename>[a-z\w\.]+)/type=(?P<submission_type>[a-z]+)/$',
+                submissions_download_response, name='submissions_download_response'),
+
+            url(r'^download/', submissions_download_view, name='submissions_download_view'),
+    
+            ]
+        return testcases_url + urls
+
 
     def get_username(self, submission):
         return submission.user.username

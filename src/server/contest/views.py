@@ -3,13 +3,14 @@ from time import mktime
 from shutil import copyfile
 from math import isclose
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Max
 from ipware.ip import get_ip
 
@@ -159,13 +160,13 @@ def upload(request):
             '_' + str(problem_.problem_id) + '.c'
 
         uploaded_filedata = request.FILES['submission_file']
-        submissions_fold = Path('contest/submissions')
-        # creates /contest/submissions folder if does not exist
-        if not submissions_fold.exists():
-            submissions_fold.mkdir()
+        latest_submissions_fold = Path('contest/submissions/latest')
+        # creates /contest/submissions/latest folder if does not exist
+        if not latest_submissions_fold.exists():
+            latest_submissions_fold.mkdir()
 
-        # creates new file in /contest/submissions
-        filepath = submissions_fold / submission_file_name
+        # creates new file in /contest/submissions/latest
+        filepath = latest_submissions_fold / submission_file_name
         with filepath.open('wb+') as submission_file:
             for chunk in uploaded_filedata.chunks():
                 submission_file.write(chunk)
@@ -193,7 +194,7 @@ def upload(request):
             if not best_folder.exists():
                 best_folder.mkdir()
 
-            source_file = "contest/submissions/"+user.username+"_"+problem_id+".c"
+            source_file = "contest/submissions/latest/"+user.username+"_"+problem_id+".c"
             dest_file = "contest/submissions/best/"+user.username+"_"+problem_id+".c"
             copyfile(source_file, dest_file)
             print("Best submission: "+user.username)
@@ -226,7 +227,68 @@ def display_submissions(request):
         "submissions": query,
         "username": user.username,
         "end": end,
-        "start": start
+        "start": start,
     }
     return render(request, "display_submissions.html", context)
+
+# For staff only access
+@staff_member_required
+def submissions_download_view(request):
+
+    best_path = Path("contest/submissions/best/")
+    latest_path = Path("contest/submissions/latest/")
+
+    # create folders if does not exist
+    if not best_path.exists():
+        best_path.mkdir()
+
+    if not latest_path.exists():
+        latest_path.mkdir()
+
+    files = [f for f in best_path.glob('**/*') if f.is_file()]
+    # Sorted: All submissions of a user will appear together
+    files.sort()
+
+    # filename: <username>_<problem_No.>.c
+
+    # removing extensions
+    filenames = [f.stem for f in files]
+
+    # extracting usernames
+    usernames = [i.split('_')[0] for i in filenames]
+
+    #extracting problem numbers
+    problem_nos = [i.split('_')[1] for i in filenames]
+
+    #Zipping usernames, problem numbers and files
+    zipped = zip(usernames, problem_nos, filenames)
+
+    #contest timer
+    end = get_time(Config.objects.all()[0].end)
+    start = get_time(Config.objects.all()[0].start)
+
+    context = {
+        "submissions": zipped,
+        "start": start,
+        "end": end,
+    }
+    return render(request, "download_submissions.html", context)
+
+# For staff only access
+@staff_member_required
+def submissions_download_response(request, filename, submission_type):
+    if (submission_type == "best"):
+        path = Path("contest/submissions/best/")
+    elif (submission_type == "latest"):
+        path = Path("contest/submissions/latest/")
+    else:
+        raise Http404()
+
+    filename = filename + ".c"
+    with open(path / filename, 'rb') as file:
+
+        response = HttpResponse(file.read())
+        response['content_type'] = 'text/plain'
+        response['content-Disposition'] = 'attachment;filename='+filename
+        return response
 
