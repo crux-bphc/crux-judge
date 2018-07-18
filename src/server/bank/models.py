@@ -4,7 +4,7 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 
 # 1. Problems: id,title, statement, output, uploadedby
 # 2. Admins: id, name, email, passwordhash
@@ -35,3 +35,15 @@ class Problem(models.Model):
 def check_config_count(sender, instance, **kwargs):
     testcase_dir = Path.cwd() / "bank/testcases" / str(instance.problem_id)
     testcase_dir.mkdir(parents=True, exist_ok=True)
+
+@receiver(post_delete, sender=Problem)
+def delete_testcases_folder(sender, instance, **kwargs):
+    """ Deletes testcases folder of the deleted problem """
+
+    testcase_dir = Path.cwd() / "bank/testcases" / str(instance.problem_id)
+    if(testcase_dir.exists()):
+        testcases_files = [f for f in testcase_dir.glob('**/*') if f.is_file()]
+        for file in testcases_files:
+            file.unlink()
+
+        testcase_dir.rmdir()
