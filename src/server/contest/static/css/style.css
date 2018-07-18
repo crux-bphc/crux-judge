@@ -340,7 +340,7 @@ table td {
 	color: white;
 }
 #crux {
-	position: absolute;
+	position: fixed;
 	bottom: 5px;
 	right: 10px;
 	color: white;
