@@ -1,4 +1,11 @@
 {% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+    <link rel="shortcut icon" href="{% static "/images/crux.ico" %}">
+    <link rel="icon" href="{% static "/images/crux.ico" %}" type = "image/x-icon">
+{% endblock %}
+
 {% block footer %}
     <div align="right">Powered by Crux.</div>
 {% endblock %}
