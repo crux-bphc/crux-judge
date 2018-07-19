@@ -4,7 +4,8 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django.dispatch import receiver
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_delete
+from django.core.validators import FileExtensionValidator
 
 # 1. Problems: id,title, statement, output, uploadedby
 # 2. Admins: id, name, email, passwordhash
@@ -16,6 +17,8 @@ class Problem(models.Model):
     problem_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=50, unique=False)
     statement = models.TextField(max_length=3000, unique=False)
+    problem_file = models.FileField(upload_to='bank/problem_files/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])], null=True, blank=True)
     uploadedby = models.ForeignKey(
         User,
         verbose_name="problem-setter",
@@ -47,3 +50,9 @@ def delete_testcases_folder(sender, instance, **kwargs):
             file.unlink()
 
         testcase_dir.rmdir()
+
+@receiver(pre_delete, sender=Problem)
+def delete_problem_file(sender, instance, **kwargs):
+    problem = Problem.objects.get(problem_id=instance.problem_id)
+    problem_file = Path(str(problem.problem_file))
+    problem_file.unlink()

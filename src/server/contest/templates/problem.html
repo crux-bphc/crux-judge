@@ -18,7 +18,13 @@
             </h2>
             <p>
                 {{problem.statement|linebreaksbr}}
-            </p><br/><br/>
+            </p>
+            {% if problem_file %}
+                <br>Download Problem Statement: 
+                <a href="/contest/problem/download/{{problem.problem_id}}" target="_blank"><button>Download</button></a>
+                <br>
+            {% endif %}
+            <br><br>
 
 
             <div>

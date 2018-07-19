@@ -94,6 +94,7 @@ def problem(request, problem_id, submission=None):
     """ Renders the page that lists all problems of the contest"""
     problem = all_problems.objects.get(problem_id=problem_id)
     this_problem = contest_problem.objects.get(problem__problem_id=problem_id)
+    problem_file = problem.problem_file
     user = User.objects.get(id=request.session['_auth_user_id'])
     submission_form = SubmissionForm()
     end = get_time(Config.objects.all()[0].end)
@@ -113,6 +114,7 @@ def problem(request, problem_id, submission=None):
         "start": start,
         "best_score": best_submission,
         "max_score": max_score,
+        "problem_file": problem_file,
     }
     return render(request, 'problem.html', context)
 
@@ -292,3 +294,14 @@ def submissions_download_response(request, filename, submission_type):
         response['content-Disposition'] = 'attachment;filename='+filename
         return response
 
+
+@login_required
+def problem_file_download(request, problem_id):
+    problem = all_problems.objects.get(problem_id=problem_id)
+    problem_file = problem.problem_file
+
+    with open(str(problem_file), 'rb') as file:
+        response = HttpResponse(file.read(), content_type='application/pdf')
+        filename = "Problem_statement_{}.pdf".format(problem_id)
+        response['content-Disposition'] = 'inline;filename=' + filename
+        return response

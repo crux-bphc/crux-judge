@@ -109,3 +109,6 @@ src/server/bank/testcases/*
 
 # sandbox executable
 sandbox-exe
+
+# problem statement files
+src/server/bank/problem_files/*
