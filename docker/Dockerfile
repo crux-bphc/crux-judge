@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
     && mkdir -p /root/home/cruxjudge/src/server/contest/sandbox/jail
 
 # Add nginx config
-ADD cruxjudge_nginx.conf /etc/nginx/sites-available/
+ADD docker/cruxjudge_nginx.conf /etc/nginx/sites-available/
 RUN ln -s /etc/nginx/sites-available/cruxjudge_nginx.conf /etc/nginx/sites-enabled/cruxjudge_nginx.conf \
     && chown -R www-data /root
 
@@ -28,6 +28,6 @@ CMD python3 manage.py collectstatic \
     && python3 manage.py migrate \
     && gcc contest/sandbox/*.c -lm -pthread -lseccomp -o contest/sandbox/sandbox-exe \
     && service nginx restart \
-    && uwsgi --ini /root/home/cruxjudge/cruxjudge_uwsgi.ini
+    && uwsgi --ini /root/home/cruxjudge/docker/cruxjudge_uwsgi.ini
 
 EXPOSE 8000
