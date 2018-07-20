@@ -130,16 +130,21 @@ def problemList(request):
         ids.append(problem.problem_id)
         contest_id.append(problem.id)
 
-    end = get_time(Config.objects.all()[0].end)
-    start = get_time(Config.objects.all()[0].start)
-    context = {
-        'data': list(zip(contest_id, ids, titles)),
-        'username': user.username,
-        'end': end,
-        "start": start,
-    }
+    # Error handling if no contest is running
+    if(Config.objects.count() == 0):
+        return render(request, 'config_error.html')
 
-    return render(request, 'problem_page.html', context)
+    else:
+        end = get_time(Config.objects.all()[0].end)
+        start = get_time(Config.objects.all()[0].start)
+        context = {
+            'data': list(zip(contest_id, ids, titles)),
+            'username': user.username,
+            'end': end,
+            "start": start,
+        }
+
+        return render(request, 'problem_page.html', context)
 
 
 def upload(request):
