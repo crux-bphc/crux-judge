@@ -4,18 +4,18 @@
 
 {% block body %}
 
-    <!-- {% if messages %}
-        <div class="alert alert-success">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        </div>
-    {% endif %} -->
 
     <div class="login-con">
         <h1>Contest Login</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="container login-form">
-        <form style="margin:10px;" action="/contest/auth/" method="POST" enctype="multipart/form-data">
+        <form style="margin:10px;" action="/contest/login/" method="POST" enctype="multipart/form-data">
 
             {% csrf_token %}
 
