@@ -2,22 +2,23 @@
 
 This is a programming judge which currently supports C language.
 
-It uses Django framework to host the server and is mainly written in Python3. PostgreSQL is the database of choice.
+It uses Django framework to host the server and is mainly written in Python3. SQLite3 is the database of choice. 
 
 ## Features
 
 1. Problem bank
 2. Partial marking using testcases
 3. Safe execution of executables using [sandbox](https://github.com/ajay0/sandbox) (written in C)
-4. Anti-cheat to prevent counterfeit submissions (under development)
+4. Anti-cheat features to prevent counterfeit submissions 
 5. Django admin facilitates easy creation of users and groups
+6. Docker image for easy deployment
 
 
 ## Techs Used
 
 1. Python3
 2. Django web server framework-1.11
-3. PostgreSQL-9.6
+3. SQLite3
 4. HTML/css/js
 5. gcc
 6. C
@@ -33,6 +34,7 @@ We are currently trying to write more documentation. This is the list of current
 * **[Directory Structure](structure.md)** - Basic guide to understand the working of the project.
 * **[Contests](contest.md)** - Basic directory structure and usage guide for contests.
 * **[Admin Portal](admin.md)** - Guide on how to use the Django Admin Portal to manage the project.
+* **[Docker](docker.md)** - Refer to this to set up a docker cotainer of the project.
 
 ## Contributors
 
@@ -41,8 +43,10 @@ We are currently trying to write more documentation. This is the list of current
 3. [Ankit Anand](https://github.com/ankit0905)
 4. [Basu Dubey](https://github.com/basu96)
 5. [Hitesh Bhagchandani](https://github.com/hit023)
-6. [Rohitt Vashishtha](https://github.com/aero31aero)
-7. [Vaibhav Bhasin](https://github.com/v-superuser)
+6. [Krut Patel](https://github.com/mach64)
+7. [Rohitt Vashishtha](https://github.com/aero31aero)
+8. [Ujjwal Raizada](https://github.com/ujjwalrox)
+9. [Vaibhav Bhasin](https://github.com/v-superuser)
 
 
 ## License
