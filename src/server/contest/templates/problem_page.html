@@ -15,12 +15,21 @@
 
     <br><br>
     <div class="container">
+        
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <div class="p-header">
             <a class="p-button" href = "/contest/submissions/">View All Submissions</a>
 
             <h3>Problems</h3>
         </div>
-
+        
         {% for contest_id,id, title in data %}
             {% csrf_token %}
             <div class="row problem">
