@@ -295,11 +295,27 @@ def submissions_download_response(request, filename, submission_type):
 
 @login_required
 def problem_file_download(request, problem_id):
+    """ Returns pdf file for problem statements """
+
     problem = all_problems.objects.get(problem_id=problem_id)
     problem_file = problem.problem_file
 
-    with open(str(problem_file), 'rb') as file:
-        response = HttpResponse(file.read(), content_type='application/pdf')
-        filename = "Problem_statement_{}.pdf".format(problem_id)
-        response['content-Disposition'] = 'inline;filename=' + filename
-        return response
+    # Check if file requested belongs to a problem in current contest.
+
+    contest_problems_all = contest_problem.objects.all()
+    contest_problems_id = [f.problem.problem_id for f in contest_problems_all]
+ 
+    if int(problem_id) in contest_problems_id:
+
+        try:
+            with open(str(problem_file), 'rb') as file:
+                response = HttpResponse(file.read(), content_type='application/pdf')
+                filename = "Problem_statement_{}.pdf".format(problem_id)
+                response['content-Disposition'] = 'inline;filename=' + filename
+                return response
+        except IOError:
+            # If problem statement file is requested for problems without them.
+            return HttpResponse("Requested file doesn't exist.")
+
+    else:
+        return HttpResponse("Access Denied.")
