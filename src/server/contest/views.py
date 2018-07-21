@@ -4,7 +4,7 @@ from shutil import copyfile
 from math import isclose
 
 from django.http import HttpResponse, Http404
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
@@ -31,32 +31,28 @@ def get_time(time_):
     return time_
 
 
-def index(request):
-    # request.session.clear_expired()
-    print(timezone.localtime())
-    if request.user.is_authenticated:
-        return problemList(request)
-
-    login_form = LoginForm()
-    end = get_time(Config.objects.all()[0].end)
-    start = get_time(Config.objects.all()[0].start)
-    context = {
-        "login_form": login_form,
-        "end": end,
-        "start": start,
-    }
-
-    return render(request, 'contest_login.html', context)
-
-
 def auth(request):
-    """ Checks login information entered by user """
-    if request.method == "POST":
+    if request.method == "GET":
 
+        if request.user.is_authenticated():
+            return redirect('/contest')
+        else:
+            login_form = LoginForm()
+            end = get_time(Config.objects.all()[0].end)
+            start = get_time(Config.objects.all()[0].start)
+            context = {
+                "login_form": login_form,
+                "end": end,
+                "start": start,
+            }
+            return render(request, 'contest_login.html', context)
+
+    elif request.method == "POST":
         if(timezone.now() < Config.objects.all()[0].start):
             return HttpResponse("Contest has not started yet.")
+
         form = LoginForm(request.POST)
-        if form.is_valid:
+        if form.is_valid():
             username = form["username"].value()
             password = form["password"].value()
 
@@ -66,28 +62,26 @@ def auth(request):
             start = active_config.start
             end = active_config.end
 
-        # TODO: multi-login checker is causing some error.
-        # user.profile.logged_in is true even when all tabs are closed.
-
-        if user is not None and user.is_active and not user.profile.logged_in \
-           and start < timezone.now() < end:
+        if user is None or not user.is_active:
+            messages.error(request,
+                "Login failed. Check username and password.")
+            return redirect('/contest/login')
+        elif not start < timezone.now() < end:
+            messages.error(request,
+                "Login failed. No contest running.")
+            return redirect('/contest/login')
+        elif user.profile.logged_in:
+            messages.error(request,
+                "Login failed. User already logged in elsewhere.")
+            return redirect('/contest/login')
+        else:
             # login_ successful
             login(request, user)
             Profile.objects.filter(user_id=user.id).update(logged_in=True)
-            # user_id = request.session['_auth_user_id']
-            # username = User.objects.get(id = user_id).username)
             # session expires when contest is over
             request.session.set_expiry(end)
             messages.success(request, "Welcome {}".format(user.username))
-            return problemList(request)
-
-        else:
-            # login_ failed
-            print("Login Failed")
-            context = {"login_form": LoginForm()}
-            return render(request, 'contest_login.html', context)
-    else:
-        return HttpResponse("contest/auth/")
+            return redirect('/contest/')
 
 @login_required
 def problem(request, problem_id, submission=None):
@@ -118,7 +112,7 @@ def problem(request, problem_id, submission=None):
     }
     return render(request, 'problem.html', context)
 
-
+@login_required(login_url='/contest/login')
 def problemList(request):
     """ Renders the page for particular problem """
     titles = []
@@ -213,11 +207,10 @@ def upload(request):
 
 
 def logout_view(request):
-    print(request.user.id)
     Profile.objects.filter(user_id=request.user.id).update(logged_in=False)
     logout(request)
     messages.info(request, "You have been logged out")
-    return index(request)
+    return redirect('/')
 
 
 def display_submissions(request):
