@@ -46,7 +46,7 @@ For example, to save two testcases for problem_id 2 the directory structure shou
 ```
 output1 corresponds to the output of the case when the input is input1.
 At least one testcase per problem is required.<br>
-<i><b>/contest/testcases/ direcotry has been shifted to /bank/testcases/</b></i><br/>
+<i><b>/contest/testcases/ directory has been shifted to /bank/testcases/</b></i><br/>
 
 
 ## How to host a Contest

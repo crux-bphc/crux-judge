@@ -9,7 +9,6 @@ You need pip3, MySQL and virtualenv installed on your system. For Debian/Ubuntu,
 ```bash
 sudo apt install python3-pip -y
 sudo pip3 install virtualenv
-sudo apt install postgresql-9.6
 ```
 
 Now, run the following commands to install the virtual environment.
@@ -26,8 +25,6 @@ sudo apt install libseccomp2 libseccomp-dev
 gcc src/server/contest/sandbox/*.c -lm -pthread -lseccomp -o src/server/contest/sandbox/sandbox-exe
 ```
 
-
-<!-- TODO : Add instructions for setting up postgresql-9.6 -->
 
 Now, you should have virtual-env installed, as well as dependencies installed/updated using pip3. You need to activate the virtual environment just installed to start developing.
 
