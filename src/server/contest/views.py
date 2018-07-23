@@ -113,34 +113,23 @@ def problem(request, problem_id, submission=None):
     return render(request, 'problem.html', context)
 
 @login_required(login_url='/contest/login')
-def problemList(request):
-    """ Renders the page for particular problem """
-    titles = []
-    ids = []
-    contest_id = []
-    problems = contest_problem.objects.all()
-    user = User.objects.get(id=request.session['_auth_user_id'])
-
-    for problem in problems:
-        titles.append(problem.problem.title)
-        ids.append(problem.problem_id)
-        contest_id.append(problem.id)
+def problem_list(request):
+    """ Renders the contest page which contains list of problems """
 
     # Error handling if no contest is running
     if(Config.objects.count() == 0):
         return render(request, 'config_error.html')
-
     else:
+        problems = contest_problem.objects.all()
         end = get_time(Config.objects.all()[0].end)
         start = get_time(Config.objects.all()[0].start)
-        context = {
-            'data': list(zip(contest_id, ids, titles)),
-            'username': user.username,
-            'end': end,
-            "start": start,
-        }
 
-        return render(request, 'problem_page.html', context)
+        context = {
+            'problems': problems,
+            'end': end,
+            'start': start,
+        }
+        return render(request, 'problem_list.html', context)
 
 
 def upload(request):

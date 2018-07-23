@@ -3,16 +3,6 @@
 {% block title %} Problem Page {% endblock %}
 
 {% block body %}
-    {% csrf_token %}
-
-    <!-- {% if messages %}
-        <div class="alert alert-success">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        </div>
-    {% endif %} -->
-
     <br><br>
     <div class="container">
         
@@ -26,15 +16,14 @@
 
         <div class="p-header">
             <a class="p-button" href = "/contest/submissions/">View All Submissions</a>
-
             <h3>Problems</h3>
         </div>
         
-        {% for contest_id,id, title in data %}
-            {% csrf_token %}
+        {% for p in problems %}
             <div class="row problem">
-                <h3>{{ contest_id }}. <a href="/contest/problem/{{id}}/">{{ title }}</a></h3>
-                <p>
+                <h3>{{ forloop.counter }}. 
+                    <a href="/contest/problem/{{ p.problem.problem_id }}">{{ p.problem.title }}</a>
+                </h3><p>
             </div>
         {% endfor %}
 
