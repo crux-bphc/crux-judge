@@ -85,30 +85,26 @@ def auth(request):
 
 @login_required
 def problem(request, problem_id, submission=None):
-    """ Renders the page that lists all problems of the contest"""
-    problem = all_problems.objects.get(problem_id=problem_id)
-    this_problem = contest_problem.objects.get(problem__problem_id=problem_id)
-    problem_file = problem.problem_file
-    user = User.objects.get(id=request.session['_auth_user_id'])
+    """ Renders the page containing problem
+        results of a submission, if any.
+    """
+    problem = contest_problem.objects.get(problem_id=problem_id)
     submission_form = SubmissionForm()
     end = get_time(Config.objects.all()[0].end)
     start = get_time(Config.objects.all()[0].start)
 
     # display highest score obtained till now in a specific problem
-    user_submissions = Submission.objects.all().filter(user=request.user, problem=problem)
+    user_submissions = Submission.objects.all().filter(
+        user=request.user, problem=problem.problem)
     best_submission = user_submissions.aggregate(Max('score'))['score__max']
-    max_score = this_problem.max_score
 
     context = {
         "submission_form": submission_form,
         "problem": problem,
-        "username": user.username,
         "submission": submission,
         "end": end,
         "start": start,
         "best_score": best_submission,
-        "max_score": max_score,
-        "problem_file": problem_file,
     }
     return render(request, 'problem.html', context)
 
