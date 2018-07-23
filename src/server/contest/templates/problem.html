@@ -1,5 +1,5 @@
 {% extends "header.html" %}
-
+{% load static %}
 {% block title %} Problem {{ problem.problem_id }} {% endblock %}
 
 {% block body %}
@@ -13,13 +13,13 @@
             <a href = "/contest/submissions/">All Submissions</a>
         </div>
         <div class="p-desc">
-            <h2>{{problem.problem_id}}. {{problem.title}}
-                <small> (Your best: {{ best_score }}/{{ max_score }})</small>
+            <h2>{{problem.problem.title}}
+                <small> (Your best: {{ best_score }}/{{ problem.max_score }})</small>
             </h2>
             <p>
-                {{problem.statement|linebreaksbr}}
+                {{problem.problem.statement|linebreaksbr}}
             </p>
-            {% if problem_file %}
+            {% if problem.problem.problem_file %}
                 <br>Download Problem Statement: 
                 <a href="/contest/problem/download/{{problem.problem_id}}" target="_blank"><button>Download</button></a>
                 <br>
@@ -42,12 +42,12 @@
                         {% for test in submission.tests %}
                             <li>
                                 <!-- TODO: Use fontawesome instead of images -->
-                                {% if test is 0 %} <img src="/../static/images/right.png" height="15" width="15"> Pass
-                                {% elif test is 6 %} <img src="/../static/images/wrong.png" height="15" width="15"> Compilation Error
-                                {% elif test is 2 %} <img src="/../static/images/wrong.png" height="15" width="15"> Runtime Error
-                                {% elif test is 3 %} <img src="/../static/images/wrong.png" height="15" width="15"> Memory Limit Exceeded
-                                {% elif test is 4 %} <img src="/../static/images/wrong.png" height="15" width="15"> Time Limit Exceeded
-                                {% elif test is 7 %} <img src="/../static/images/wrong.png" height="15" width="15"> Incorrect Answer
+                                {% if test is 0 %} <img src={% static "/images/right.png" %} height="15" width="15"> Pass
+                                {% elif test is 6 %} <img src={% static "/images/wrong.png" %} height="15" width="15"> Compilation Error
+                                {% elif test is 2 %} <img src={% static "/images/wrong.png" %} height="15" width="15"> Runtime Error
+                                {% elif test is 3 %} <img src={% static "/images/wrong.png" %} height="15" width="15"> Memory Limit Exceeded
+                                {% elif test is 4 %} <img src={% static "/images/wrong.png" %} height="15" width="15"> Time Limit Exceeded
+                                {% elif test is 7 %} <img src={% static "/images/wrong.png" %} height="15" width="15"> Incorrect Answer
                                 {% endif %}
                             </li>
                         {% endfor %}
