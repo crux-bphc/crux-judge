@@ -4,7 +4,7 @@ from shutil import copyfile
 from math import isclose
 
 from django.http import HttpResponse, Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
@@ -295,11 +295,15 @@ def submissions_download_response(request, filename, submission_type):
 
 @login_required
 def problem_file_download(request, problem_id):
-    problem = all_problems.objects.get(problem_id=problem_id)
-    problem_file = problem.problem_file
+    problem = get_object_or_404(contest_problem, problem_id=problem_id)
+    problem_file = problem.problem.problem_file
 
-    with open(str(problem_file), 'rb') as file:
-        response = HttpResponse(file.read(), content_type='application/pdf')
-        filename = "Problem_statement_{}.pdf".format(problem_id)
-        response['content-Disposition'] = 'inline;filename=' + filename
-        return response
+    try:
+        with open(str(problem_file), 'rb') as file:
+            response = HttpResponse(file.read(), content_type='application/pdf')
+            filename = "Problem_statement_{}.pdf".format(problem_id)
+            response['content-Disposition'] = 'inline;filename=' + filename
+            return response
+    except IOError:
+        # if problem doesn't contain any problem statement pdf
+        raise Http404()
