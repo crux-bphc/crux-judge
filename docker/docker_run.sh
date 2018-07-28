@@ -30,6 +30,7 @@ flags=(
     --mount type=bind,source=$SUBMISSIONS_DIR,target="/root/home/cruxjudge/src/server/contest/submissions/" 
     --mount type=bind,source=$PROBLEM_FILES_DIR,target="/root/home/cruxjudge/src/server/bank/problem_files/"
     --mount type=bind,source=$DB_PATH,target="/root/home/cruxjudge/src/server/db.sqlite3" 
+    --rm
 )
 
 # Add custom flags, if any
