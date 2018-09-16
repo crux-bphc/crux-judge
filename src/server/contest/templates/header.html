@@ -46,14 +46,11 @@
     </div>
 
     <script>
-    var start = "{{ start }}"
-    var end = "{{ end }}"
+    var remTime = {{ time_left }};
     var update_time = function(){
-        var d = new Date();
-        d.setHours(d.getHours() - 5);
-        d.setMinutes(d.getMinutes() - 30);
-        var n = d.getTime();
-        milSec = (end-n > 0)? (n > start) ? end-n : end-start : 0;
+        
+        milSec = remTime > 0 ? remTime : 0;
+        remTime -= 1000;
 
         var milliseconds = parseInt((milSec%1000)/100)
         , seconds = parseInt((milSec/1000)%60)

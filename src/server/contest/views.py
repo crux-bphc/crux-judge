@@ -1,5 +1,5 @@
 from pathlib import Path
-from time import mktime
+from datetime import datetime
 from shutil import copyfile
 from math import isclose
 
@@ -22,13 +22,10 @@ from . import runner
 
 # Create your views here.
 
-
-def get_time(time_):
-    timetuple = time_.timetuple()
-    timestamp = mktime(timetuple)
-    time_ = timestamp * 1000.0
-
-    return time_
+def get_remaining_time():
+    end_time = Config.objects.all()[0].end
+    rem_time = end_time.replace(tzinfo=None) - datetime.now().replace(tzinfo=None)
+    return rem_time.total_seconds() * 1000
 
 
 def auth(request):
@@ -38,12 +35,9 @@ def auth(request):
             return redirect('/contest')
         else:
             login_form = LoginForm()
-            end = get_time(Config.objects.all()[0].end)
-            start = get_time(Config.objects.all()[0].start)
             context = {
                 "login_form": login_form,
-                "end": end,
-                "start": start,
+                "time_left": get_remaining_time()
             }
             return render(request, 'contest_login.html', context)
 
@@ -90,8 +84,6 @@ def problem(request, problem_id, submission=None):
     """
     problem = contest_problem.objects.get(problem_id=problem_id)
     submission_form = SubmissionForm()
-    end = get_time(Config.objects.all()[0].end)
-    start = get_time(Config.objects.all()[0].start)
 
     # display highest score obtained till now in a specific problem
     user_submissions = Submission.objects.all().filter(
@@ -102,8 +94,7 @@ def problem(request, problem_id, submission=None):
         "submission_form": submission_form,
         "problem": problem,
         "submission": submission,
-        "end": end,
-        "start": start,
+        "time_left": get_remaining_time(),
         "best_score": best_submission,
     }
     return render(request, 'problem.html', context)
@@ -117,13 +108,9 @@ def problem_list(request):
         return render(request, 'config_error.html')
     else:
         problems = contest_problem.objects.all()
-        end = get_time(Config.objects.all()[0].end)
-        start = get_time(Config.objects.all()[0].start)
-
         context = {
             'problems': problems,
-            'end': end,
-            'start': start,
+            "time_left": get_remaining_time()
         }
         return render(request, 'problem_list.html', context)
 
@@ -201,8 +188,6 @@ def logout_view(request):
 def display_submissions(request):
     """Render page to display submissions made till the given time """
     user = User.objects.get(id=request.session['_auth_user_id'])
-    end = get_time(Config.objects.all()[0].end)
-    start = get_time(Config.objects.all()[0].start)
 
     if request.GET.keys():
         query = Submission.objects.filter(problem_id=request.GET['p'])
@@ -211,8 +196,7 @@ def display_submissions(request):
     context = {
         "submissions": query,
         "username": user.username,
-        "end": end,
-        "start": start,
+        "time_left": get_remaining_time()
     }
     return render(request, "display_submissions.html", context)
 
@@ -248,14 +232,9 @@ def submissions_download_view(request):
     #Zipping usernames, problem numbers and files
     zipped = zip(usernames, problem_nos, filenames)
 
-    #contest timer
-    end = get_time(Config.objects.all()[0].end)
-    start = get_time(Config.objects.all()[0].start)
-
     context = {
         "submissions": zipped,
-        "start": start,
-        "end": end,
+        "time_left": get_remaining_time()
     }
     return render(request, "download_submissions.html", context)
 
