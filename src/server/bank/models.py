@@ -54,5 +54,7 @@ def delete_testcases_folder(sender, instance, **kwargs):
 @receiver(pre_delete, sender=Problem)
 def delete_problem_file(sender, instance, **kwargs):
     problem = Problem.objects.get(problem_id=instance.problem_id)
+    if not problem.problem_file:
+        return
     problem_file = Path(str(problem.problem_file))
     problem_file.unlink()
