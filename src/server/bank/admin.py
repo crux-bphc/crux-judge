@@ -14,7 +14,7 @@ from bank.models import Problem as bank_problems
 import add_student_records
 
 BASE_TEST_CASES_DIR = Path.cwd() / 'bank/testcases'
-
+PASSWORD_FILENAME = Path.cwd() / 'students_password.csv'
 
 class ProblemAdmin(admin.ModelAdmin):
 
@@ -183,12 +183,17 @@ class CustomUserAdmin(UserAdmin):
         )
         return render(request, "admin/auth/user/addusers.html", context)
 
+    def export_password_file(self, filename):
+        with open(filename, 'r') as f:
+            response = HttpResponse(f.read(), content_type='text/csv')
+            response['content-Disposition'] = 'attachment; filename=' + PASSWORD_FILENAME.name
+            return response
+
     def user_records_upload(self, request):
 
         uploaded_file = request.FILES['user_records']
         add_student_records.readfile(uploaded_file)
-
-        return redirect("/admin/auth/user/addusers/")
+        return self.export_password_file(PASSWORD_FILENAME)
 
     def get_name(self, user):
         return user.first_name + user.last_name
