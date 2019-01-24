@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import datetime
 from shutil import copyfile
 from math import isclose
+import csv
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
@@ -21,6 +22,28 @@ from bank.models import Problem as all_problems
 from . import runner
 
 # Create your views here.
+
+def queryset_csv_response(qs):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="submissions.csv"'
+
+    model = qs.model
+    writer = csv.writer(response)
+
+    headers = []
+    for field in model._meta.fields:
+        headers.append(field.name)
+    writer.writerow(headers)
+
+    for obj in qs:
+        row = []
+        for field in headers:
+            val = getattr(obj, field)
+            if callable(val):
+                val = val()
+            row.append(val)
+        writer.writerow(row)
+    return(response)
 
 def get_remaining_time():
     end_time = Config.objects.all()[0].end
@@ -271,3 +294,9 @@ def problem_file_download(request, problem_id):
     except IOError:
         # if problem doesn't contain any problem statement pdf
         raise Http404()
+
+@staff_member_required
+def submissions_export_view(request):
+    queryset = Submission.objects.all()
+    response = queryset_csv_response(queryset)
+    return response
