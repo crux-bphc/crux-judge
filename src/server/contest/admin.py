@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.conf.urls import url
 
 from .models import Problem, Submission, Config
-from .views import submissions_download_response, submissions_download_view
+from .views import submissions_download_response, submissions_download_view, \
+    submissions_export_view
 
 class ProblemAdmin(admin.ModelAdmin):
 
@@ -46,8 +47,8 @@ class SubmissionAdmin(admin.ModelAdmin):
                 submissions_download_response, name='submissions_download_response'),
 
             url(r'^download/', submissions_download_view, name='submissions_download_view'),
-    
-            ]
+            url(r'^export/', submissions_export_view, name='submissions_export_view'),
+        ]
         return testcases_url + urls
 
 
