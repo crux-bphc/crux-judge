@@ -199,10 +199,19 @@ class CustomUserAdmin(UserAdmin):
         return user.first_name + user.last_name
     get_name.short_description = "Name"
 
+    def make_active(self, request, queryset):
+        queryset.update(is_active=True)
+    make_active.short_description = "Mark selected users as active"
+
+    def make_inactive(self, request, queryset):
+        queryset.update(is_active=False)
+    make_inactive.short_description = "Mark selected users as inactive"
+
     list_display = [
         'username',
         'get_name',
         'is_staff',
+        'is_active',
     ]
 
     list_display_links = [
@@ -210,6 +219,14 @@ class CustomUserAdmin(UserAdmin):
         'get_name',
     ]
 
+    list_editable = [
+        'is_active',
+    ]
+
+    actions = [
+        'make_active',
+        'make_inactive',
+    ]
 
 admin.site.register(Problem, ProblemAdmin)
 admin.site.unregister(User)
