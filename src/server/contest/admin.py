@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.conf.urls import url
 
-from .models import Problem, Submission, Config
+from .models import Problem, Submission, Config, Profile
 from .views import submissions_download_response, submissions_download_view, \
     submissions_export_view
 
@@ -114,6 +114,16 @@ class ConfigAdmin(admin.ModelAdmin):
         'end',
     ]
 
+class ProfileAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'user',
+        'logged_in',
+    ]
+
+    list_editable = [
+        'logged_in',
+    ]
 
 admin.site.site_header = "Judge Administration Portal"
 admin.site.site_title = "Crux Judge Admin"
@@ -122,3 +132,4 @@ admin.site.register(Problem, ProblemAdmin)
 admin.site.register(Submission, SubmissionAdmin)
 # Improve later
 admin.site.register(Config, ConfigAdmin)
+admin.site.register(Profile, ProfileAdmin)
